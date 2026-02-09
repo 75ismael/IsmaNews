@@ -1,0 +1,71 @@
+C'est une excellente idée. Voici ta **"Fiche de Bord"** récapitulative. C'est le résumé technique de l'architecture que nous avons construite pour **IsmaNews**. Tu peux la copier dans un fichier `NOTES.md` à la racine de ton projet.
+
+---
+
+## 📂 Fiche Récapitulative : IsmaNews Automation
+
+### 1. L'Architecture Globale
+
+Ton projet est un journal auto-alimenté par IA qui fonctionne en circuit fermé :
+**NewsAPI (Sources)** ⮕ **Groq/Llama 3 (Rédaction)** ⮕ **Django (Stockage/Admin)** ⮕ **Cron (Automatisation)**.
+
+---
+
+### 2. Les Composants Clés
+
+| Composant | Rôle | Fichier Source |
+| --- | --- | --- |
+| **Le Modèle** | Définit la structure (Titre, Slug, Auteur, Source, Image). | `journal/models.py` |
+| **Le Fetcher** | Va chercher les news brutes sur le web (France, Iran, etc.). | `journal/news_fetcher.py` |
+| **Le Moteur IA** | Rédige l'article, choisit la catégorie et crée l'objet en DB. | `journal/ai.py` |
+| **L'Automate** | Déclenche tout le processus toutes les 4 heures. | `journal/cron.py` |
+| **Le Cron** | Planifie la tâche dans le système de ton Mac. | `settings.py` (CRONJOBS) |
+
+---
+
+### 3. Commandes de Secours (Terminal)
+
+Voici les commandes que tu as utilisées pour débloquer les situations critiques :
+
+* **Appliquer des changements au modèle :**
+```bash
+python manage.py makemigrations
+python manage.py migrate
+
+```
+
+
+* **Forcer le robot à travailler (sans attendre 4h) :**
+```bash
+python manage.py crontab run afc7e0f98081760d3c77c46f884502f0
+
+```
+
+
+* **Réinitialiser le planning du robot :**
+```bash
+python manage.py crontab add
+
+```
+
+
+
+---
+
+### 4. Sécurités mises en place
+
+* **Slugs Automatiques :** Le système transforme "Titre de l'Article" en `titre-de-l-article` pour le SEO.
+* **Validation Humaine :** Les articles arrivent en `draft` (brouillon). Ils ne sont pas publics tant que tu ne les valides pas dans l'Admin.
+* **Auteur Forcé :** Chaque article est lié à ton profil `admin_isma` pour respecter la structure de la base de données.
+* **Alerte Email :** Le système t'envoie un mail dès qu'une fournée d'articles est prête.
+
+---
+
+### 5. Ce qu'on a corrigé (Les leçons)
+
+1. **Erreurs de contraintes :** On ne peut pas ajouter un champ "Unique" ou "Obligatoire" sur une base déjà pleine sans donner de valeur par défaut ou vider la base.
+2. **Synchronisation :** Si on change le `models.py`, il faut impérativement mettre à jour le script `ai.py` pour qu'il envoie les bonnes données.
+
+---
+
+**Quelle est la suite pour toi ?** Maintenant que "le moteur" sous le capot tourne comme une horloge, veux-tu qu'on s'attaque à **la carrosserie (le Design CSS)** pour que tes 14 nouveaux articles soient magnifiques à lire ?

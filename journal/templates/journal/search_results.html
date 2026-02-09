@@ -1,0 +1,34 @@
+{% extends "journal/home.html" %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <div style="border-bottom: 2px solid #000; margin-bottom: 30px; padding-bottom: 10px;">
+        <h2 style="font-family: 'Playfair Display', serif; font-size: 2.5rem;">
+            Résultats pour : "{{ query }}"
+        </h2>
+        <p style="font-family: 'Libre Franklin', sans-serif; color: #666;">
+            {{ results|length }} article(s) trouvé(s)
+        </p>
+    </div>
+
+    {% for a in results %}
+    <article style="display: flex; gap: 20px; margin-bottom: 30px; border-bottom: 1px solid #eee; padding-bottom: 20px;">
+        {% if a.image_url %}
+            <img src="{{ a.image_url }}" style="width: 200px; height: 130px; object-fit: cover;">
+        {% endif %}
+        <div>
+            <span style="color:red; font-weight:bold; font-size:0.8rem; text-transform:uppercase;">{{ a.category.name }}</span>
+            <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 10px 0;">
+                <a href="/article/{{ a.id }}/" style="text-decoration:none; color:#000;">{{ a.title }}</a>
+            </h3>
+            <p style="font-size: 0.9rem; color: #444;">{{ a.summary|truncatechars:160 }}</p>
+        </div>
+    </article>
+    {% empty %}
+    <div style="text-align: center; padding: 50px;">
+        <p style="font-size: 1.2rem; color: #666;">Aucun article ne correspond à votre recherche.</p>
+        <a href="/" style="color: #bc0000; font-weight: bold;">Retourner à la une</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
