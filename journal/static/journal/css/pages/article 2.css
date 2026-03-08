@@ -1,0 +1,41 @@
+/*Le design des articles et des cartes journaux.*/
+
+.newspaper-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 40px 0;
+}
+.newspaper-card {
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    transition: 0.3s;
+}
+.newspaper-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.secondary-article {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+}
+.secondary-article img {
+    width: 150px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+    .newspaper-grid { grid-template-columns: 1fr; }
+    .secondary-article { flex-direction: column; }
+    .secondary-article img { width: 100%; height: 200px; }
+}

@@ -1,0 +1,22 @@
+/* pages/category.css
+
+La Page Catégorie est le grand conteneur qui organise tous les articles d'un même sujet.
+*/
+
+.category-header {
+    border-bottom: 3px solid var(--text-color);
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+}
+
+.category-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    text-transform: capitalize;
+}
+
+.category-description {
+    color: var(--monde-grey);
+    font-size: 1.1rem;
+    margin-top: 10px;
+}
