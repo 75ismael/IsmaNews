@@ -16,7 +16,7 @@ def run():
         user_admin = User.objects.get(username="ismaelahamada")
         author_ia, _ = AuthorProfile.objects.get_or_create(user=user_admin)
     except User.DoesNotExist:
-        print("❌ Erreur : L'utilisateur 'ismaelahamada' n'existe pas.")
+        print(" Erreur : L'utilisateur 'ismaelahamada' n'existe pas.")
         return
 
     # 3. Traitement de chaque news
@@ -53,19 +53,19 @@ def run():
             if nouveau_art.image_url:
                 # Cette fonction crée le visuel sur ton MacBook Air
                 visuel_path = generate_news_image(nouveau_art.image_url, nouveau_art.title)
-                print(f"📸 Visuel généré : {visuel_path}")
+                print(f"Visuel généré : {visuel_path}")
 
             articles_crees.append(nouveau_art)
-            print(f"✅ Article ajouté : {nouveau_art.title[:50]}...")
+            print(f"Article ajouté : {nouveau_art.title[:50]}...")
 
         except Exception as e:
-            print(f"⚠️ Erreur sur l'article {n.get('title')}: {e}")
+            print(f"Erreur sur l'article {n.get('title')}: {e}")
 
     # 5. Envoi du rapport final par Email
     if articles_crees:
         send_report_email(articles_crees, len(articles_crees))
-        print(f"📧 Rapport envoyé pour {len(articles_crees)} articles.")
+        print(f" Rapport envoyé pour {len(articles_crees)} articles.")
     else:
         print("Empty-handed : Aucune nouvelle news à traiter.")
 
-    print("🏁 Fin du cycle.")
+    print("Fin du cycle.")
