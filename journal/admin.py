@@ -74,12 +74,12 @@ class ArticleAdmin(admin.ModelAdmin):
     def is_breaking(self, obj):
         return obj.is_breaking_news
     is_breaking.boolean = True
-    is_breaking.short_description = "🔥 Urgent"
+    is_breaking.short_description = "Urgent"
 
     def is_ai(self, obj):
         return obj.is_ai_selection
     is_ai.boolean = True
-    is_ai.short_description = "🧠 IA"
+    is_ai.short_description = " IA"
 
     def display_category(self, obj):
         return obj.category.name if obj.category else "-"
