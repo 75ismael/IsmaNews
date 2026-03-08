@@ -13,38 +13,29 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.contrib.auth.models import User
-from dotenv import load_dotenv
-
-from journal.models import Category, Article, AuthorProfile
-from journal.utils import post_to_facebook, send_report_email
-
-# Load environment variables and initialize logging
 load_dotenv()
 logger = logging.getLogger(__name__)
 
 # --- CONFIGURATION ---
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-if not GROQ_API_KEY:
-    logger.error("GROQ_API_KEY not found in environment variables.")
+PROVIDER_API_KEY = os.getenv("GROQ_API_KEY")
+if not PROVIDER_API_KEY:
+    logger.error("API Key not found in environment variables.")
     client = None
 else:
-    client = Groq(api_key=GROQ_API_KEY)
+    client = Groq(api_key=PROVIDER_API_KEY)
 
-def write(article_data: Dict) -> str:
-    """Generates a complete press article using AI."""
+def generate_article_content(article_data: Dict) -> str:
+    """Generates a complete press article based on source data."""
     if not client:
-        return "AI Client not configured."
+        return "Content generation service not configured."
 
     source_content = article_data.get('content') or article_data.get('description') or "Pas de contenu disponible."
 
     prompt = f"""
-    Tu es le rédacteur en chef d'Alkamaria Global News. 
     Rédige un article captivant en français sur ce sujet : {source_content}
 
-    CONSIGNES DE STYLE (ANTI-ROBOT) :
-    - INTERDIT : Ne mets JAMAIS de texte en gras (pas de **).
-    - INTERDIT : Bannis les mots d'IA : 'crucial', 'essentiel', 'complexe', 'au cœur de', 'foudroyant', 'pléthore'.
-    - TON : Journalistique, direct.
+    STYLE :
+    - Ton : Journalistique, direct.
     
     STRUCTURE :
     - Une accroche directe.
@@ -73,11 +64,11 @@ def write(article_data: Dict) -> str:
 
         return content.replace("**", "").strip()
     except Exception as e:
-        logger.error(f"Error during AI article generation: {e}")
+        logger.error(f"Error during article generation: {e}")
         return "Erreur lors de la génération de l'article."
 
 def detect_category(text: str) -> str:
-    """Detects the category of an article using AI."""
+    """Classifies an article into a category."""
     if not client:
         return "International"
 
@@ -171,26 +162,25 @@ def generate_news_image(base_image_url: str, title: str) -> Optional[str]:
         logger.error(f"Error generating visual for '{title}': {e}")
         return None
 
-def run_automation(news_list: List[Dict]):
-    """Orchestrates the full IA news production value chain."""
-    logger.info(f"Launching automation for {len(news_list)} potential articles...")
+def process_news_cycle(news_list: List[Dict]):
+    """Orchestrates the full news production workflow."""
+    logger.info(f"Processing cycle for {len(news_list)} potential articles...")
     count = 0
     articles_created = []
 
     if not client:
-        logger.error("AI client not available. Aborting.")
+        logger.error("Content service not available. Aborting.")
         return
 
     try:
-        # Robust user lookup
         user_admin = User.objects.filter(is_superuser=True).first()
         if not user_admin:
-            logger.error("No admin user found to attribute articles.")
+            logger.error("No editor found to attribute articles.")
             return
         
-        author_ia, _ = AuthorProfile.objects.get_or_create(user=user_admin)
+        editor_profile, _ = AuthorProfile.objects.get_or_create(user=user_admin)
     except Exception as e:
-        logger.error(f"Error setting up author profile: {e}")
+        logger.error(f"Error setting up editor profile: {e}")
         return
 
     for item in news_list:
@@ -200,7 +190,7 @@ def run_automation(news_list: List[Dict]):
                 logger.info(f"Article already exists: {item.get('title')[:30]}...")
                 continue
 
-            content = write(item)
+            content = generate_article_content(item)
             cat_name = detect_category(content)
             cat, _ = Category.objects.get_or_create(name=cat_name, defaults={'slug': slugify(cat_name)})
 
@@ -212,7 +202,7 @@ def run_automation(news_list: List[Dict]):
                 source=item.get('source', {}).get('name', 'Inconnue'),
                 source_url=source_url,
                 category=cat,
-                author=author_ia,
+                author=editor_profile,
                 status="published",
                 published_at=timezone.now()
             )
