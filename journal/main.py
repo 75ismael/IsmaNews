@@ -1,36 +1,60 @@
 import os
 import sys
+import logging
 import django
+from dotenv import load_dotenv
 
-# 1. On ajoute le dossier parent au chemin de recherche de Python
-# Cela permet à Python de "voir" le dossier ismanews qui est au-dessus
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("IsmaNews")
 
-# 2. On définit le module de réglages
-# Ici, on utilise le nom du dossier qui contient ton settings.py
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ismanews.settings')
+def setup_django():
+    """Configures the Python path and Django environment."""
+    # 1. Add parent directory to path
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    sys.path.append(base_dir)
 
-# 3. Initialisation de Django
-try:
-    django.setup()
-    print("✅ Django est initialisé avec succès !")
-except Exception as e:
-    print(f"❌ Erreur d'initialisation : {e}")
+    # 2. Set settings module
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ismanews.settings')
 
-# 4. Import des scripts (UNIQUEMENT après django.setup())
-from news_fetcher import fetch_news
-from ai import run_automation
+    # 3. Load environment variables
+    load_dotenv(os.path.join(base_dir, '.env'))
+
+    # 4. Initialize Django
+    try:
+        django.setup()
+        logger.info("Django initialized successfully.")
+    except Exception as e:
+        logger.error(f"Failed to initialize Django: {e}")
+        sys.exit(1)
+
+def main():
+    """Main execution flow."""
+    setup_django()
+
+    # Import scripts AFTER django.setup()
+    try:
+        from news_fetcher import fetch_news
+        from ai import run_automation
+    except ImportError as e:
+        logger.error(f"Failed to import core modules: {e}")
+        return
+
+    logger.info("--- STARTING ISMANEWS CYCLE ---")
+
+    # Fetch fresh news
+    news_found = fetch_news()
+
+    if news_found:
+        run_automation(news_found)
+    else:
+        logger.info("No new articles found this cycle.")
+
+    logger.info("--- CYCLE COMPLETED ---")
 
 if __name__ == "__main__":
-    print("--- 🏁 DÉMARRAGE DU CYCLE ISMANEWS ---")
-
-    # On va chercher les news
-    news_fraiches = fetch_news()
-
-    if news_fraiches:
-        run_automation(news_fraiches)
-    else:
-        print("📭 Aucune nouvelle news trouvée.")
-
-    print("--- ✅ CYCLE TERMINÉ ---")
+    main()
 # ... le reste de ton code ...

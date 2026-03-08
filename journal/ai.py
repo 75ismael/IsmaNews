@@ -1,9 +1,11 @@
-from PIL import ImageFilter, Image, ImageDraw, ImageFont, ImageEnhance
-import textwrap
 import os
 import time
+import logging
 import requests
+import textwrap
 from io import BytesIO
+from typing import List, Dict, Optional
+from PIL import ImageFilter, Image, ImageDraw, ImageFont, ImageEnhance
 from groq import Groq
 from django.utils import timezone
 from django.utils.text import slugify
@@ -11,13 +13,28 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.contrib.auth.models import User
+from dotenv import load_dotenv
+
 from journal.models import Category, Article, AuthorProfile
-from journal.utils import post_to_facebook,send_report_email
+from journal.utils import post_to_facebook, send_report_email
+
+# Load environment variables and initialize logging
+load_dotenv()
+logger = logging.getLogger(__name__)
 
 # --- CONFIGURATION ---
-client = Groq(api_key="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")
-def write(article_data):
-    """Génère un article de presse complet, humain et sans gras Markdown"""
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    logger.error("GROQ_API_KEY not found in environment variables.")
+    client = None
+else:
+    client = Groq(api_key=GROQ_API_KEY)
+
+def write(article_data: Dict) -> str:
+    """Generates a complete press article using AI."""
+    if not client:
+        return "AI Client not configured."
+
     source_content = article_data.get('content') or article_data.get('description') or "Pas de contenu disponible."
 
     prompt = f"""
@@ -27,51 +44,60 @@ def write(article_data):
     CONSIGNES DE STYLE (ANTI-ROBOT) :
     - INTERDIT : Ne mets JAMAIS de texte en gras (pas de **).
     - INTERDIT : Bannis les mots d'IA : 'crucial', 'essentiel', 'complexe', 'au cœur de', 'foudroyant', 'pléthore'.
-    - TON : Journalistique, direct. Évite les phrases bateaux comme "Les fans attendaient avec impatience".
+    - TON : Journalistique, direct.
     
     STRUCTURE :
-    1. UNE ACCROCHE : Entre immédiatement dans le fait principal.
-    2. DÉVELOPPEMENT : Explique les faits (pourquoi, comment, qui) avec des chiffres si possible.
-    3. ENJEUX : Explique l'impact concret. Ne dis pas "Pourquoi c'est important", montre-le.
-    4. CONCLUSION : Une phrase d'ouverture pour l'audience.
+    - Une accroche directe.
+    - Développement des faits.
+    - Impact concret/enjeux.
+    - Conclusion ouverte.
 
-    IMPORTANT : N'écris PAS les noms des sections (ex: n'écris pas 'DÉVELOPPEMENT :'). Fais des paragraphes fluides.
+    IMPORTANT : Pas de titres de section. Fais des paragraphes fluides.
     """
 
-    completion = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7 # Ajoute un peu de naturel
-    )
+    try:
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.7
+        )
+        content = completion.choices[0].message.content
+        
+        # Cleanup labels if AI ignored instructions
+        labels_to_remove = [
+            "ACCROCHE :", "DÉVELOPPEMENT :", "ENJEUX :", "CONCLUSION :",
+            "UNE ACCROCHE :", "🔍 CONCLUSION :", "🌍 ENJEUX :", "📝 DÉVELOPPEMENT :", "📰 UNE ACCROCHE :"
+        ]
+        for label in labels_to_remove:
+            content = content.replace(label, "")
 
-    content = completion.choices[0].message.content
+        return content.replace("**", "").strip()
+    except Exception as e:
+        logger.error(f"Error during AI article generation: {e}")
+        return "Erreur lors de la génération de l'article."
 
-    # --- SÉCURITÉ : NETTOYAGE DES ÉTIQUETTES ---
-    # Si l'IA écrit quand même les titres de section, on les efface ici
-    labels_to_remove = [
-        "ACCROCHE :", "DÉVELOPPEMENT :", "ENJEUX :", "CONCLUSION :",
-        "UNE ACCROCHE :", "🔍 CONCLUSION :", "🌍 ENJEUX :", "📝 DÉVELOPPEMENT :", "📰 UNE ACCROCHE :"
-    ]
+def detect_category(text: str) -> str:
+    """Detects the category of an article using AI."""
+    if not client:
+        return "International"
 
-    for label in labels_to_remove:
-        content = content.replace(label, "")
-
-    # Nettoyage final du gras et des espaces inutiles
-    content = content.replace("**", "").strip()
-
-    return content
-def detect_category(text):
     prompt = f"Donne uniquement un mot de catégorie (France, Iran, USA, Afrique, International) pour ce texte : {text[:200]}"
-    completion = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0
-    )
-    return completion.choices[0].message.content.strip().replace(".", "")
+    try:
+        completion = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+        return completion.choices[0].message.content.strip().replace(".", "")
+    except Exception as e:
+        logger.error(f"Error detecting category: {e}")
+        return "International"
 
-def generate_news_image(base_image_url, title):
+def generate_news_image(base_image_url: str, title: str) -> Optional[str]:
+    """Generates a professional news visual with overlay."""
     try:
         response = requests.get(base_image_url, timeout=10)
+        response.raise_for_status()
         img = Image.open(BytesIO(response.content)).convert("RGB")
 
         # 1. FORMAT PORTRAIT (1080x1350)
@@ -90,20 +116,31 @@ def generate_news_image(base_image_url, title):
             top = (new_height - target_height) / 2
             img = img.crop((0, top, target_width, top + target_height))
 
-        # 2. EFFETS PRO
+        # 2. PRO EFFECTS & OVERLAY
         img = ImageEnhance.Contrast(img).enhance(1.1)
-        overlay = Image.new('RGBA', (1080, 1350), (0, 0, 0, 0))
+        overlay = Image.new('RGBA', (target_width, target_height), (0, 0, 0, 0))
         draw = ImageDraw.Draw(overlay)
 
+        # Gradient bottom
         for i in range(500):
             alpha = int((i / 500) * 230)
-            draw.line([(0, 1350-i), (1080, 1350-i)], fill=(0, 0, 0, alpha))
+            draw.line([(0, target_height-i), (target_width, target_height-i)], fill=(0, 0, 0, alpha))
 
+        # Blue accent bar
         draw.rectangle([50, 1050, 58, 1280], fill=(26, 115, 232, 255))
 
+        # Font handling
         try:
-            font = ImageFont.truetype("/Library/Fonts/Arial Bold.ttf", 55)
-        except:
+            # Common paths on macOS/Linux
+            font_paths = ["/Library/Fonts/Arial Bold.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"]
+            font = None
+            for path in font_paths:
+                if os.path.exists(path):
+                    font = ImageFont.truetype(path, 55)
+                    break
+            if not font:
+                font = ImageFont.load_default()
+        except Exception:
             font = ImageFont.load_default()
 
         lines = textwrap.wrap(title, width=32)
@@ -115,74 +152,95 @@ def generate_news_image(base_image_url, title):
 
         img = Image.alpha_composite(img.convert("RGBA"), overlay)
 
+        # Paste Logo
         logo_path = os.path.join(settings.BASE_DIR, 'journal', 'static', 'journal', 'images', 'logo.png')
         if os.path.exists(logo_path):
             logo = Image.open(logo_path).convert("RGBA")
             logo.thumbnail((200, 200))
             img.paste(logo, (830, 40), logo)
 
+        # Save
         file_name = f"share_{slugify(title[:20])}.jpg"
-        save_path = os.path.join(settings.BASE_DIR, 'journal', 'news_shares', file_name)
+        save_dir = os.path.join(settings.BASE_DIR, 'journal', 'news_shares')
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, file_name)
         img.convert("RGB").save(save_path, "JPEG", quality=95)
         return save_path
 
     except Exception as e:
-        print(f"❌ Erreur Image : {e}")
+        logger.error(f"Error generating visual for '{title}': {e}")
         return None
 
-# --- AUTOMATION ---
-def run_automation(news_list):
-    print(f"🚀 Lancement de l'automatisation ({len(news_list)} articles potentiels)...")
-    compteur = 0
-    articles_crees = []
+def run_automation(news_list: List[Dict]):
+    """Orchestrates the full IA news production value chain."""
+    logger.info(f"Launching automation for {len(news_list)} potential articles...")
+    count = 0
+    articles_created = []
+
+    if not client:
+        logger.error("AI client not available. Aborting.")
+        return
 
     try:
-        user_admin = User.objects.get(username="ismaelahamada")
+        # Robust user lookup
+        user_admin = User.objects.filter(is_superuser=True).first()
+        if not user_admin:
+            logger.error("No admin user found to attribute articles.")
+            return
+        
         author_ia, _ = AuthorProfile.objects.get_or_create(user=user_admin)
-    except User.DoesNotExist:
-        print("❌ Erreur : L'utilisateur 'ismaelahamada' n'existe pas.")
+    except Exception as e:
+        logger.error(f"Error setting up author profile: {e}")
         return
 
     for item in news_list:
         try:
-            if Article.objects.filter(source_url=item.get('url')).exists():
+            source_url = item.get('url', '')
+            if Article.objects.filter(source_url=source_url).exists():
+                logger.info(f"Article already exists: {item.get('title')[:30]}...")
                 continue
 
             content = write(item)
             cat_name = detect_category(content)
             cat, _ = Category.objects.get_or_create(name=cat_name, defaults={'slug': slugify(cat_name)})
 
-            nouveau_art = Article.objects.create(
+            article = Article.objects.create(
                 title=item.get('title', 'Sans titre'),
                 summary=content[:300] + "...",
                 content=content,
                 image_url=item.get('urlToImage'),
                 source=item.get('source', {}).get('name', 'Inconnue'),
-                source_url=item.get('url', ''),
+                source_url=source_url,
                 category=cat,
                 author=author_ia,
                 status="published",
                 published_at=timezone.now()
             )
 
-            if nouveau_art.image_url:
-                visuel_local = generate_news_image(nouveau_art.image_url, nouveau_art.title)
-                if visuel_local:
-                    # CHANGEMENT ICI : On publie le contenu complet (content)
-                    msg_fb = f"{nouveau_art.content}\n\n # Alkamaria Global News\n#News #{cat_name}"
-                    fb_res = post_to_facebook(visuel_local, msg_fb)
+            # Optional Social Media Posting
+            if article.image_url:
+                visual_path = generate_news_image(article.image_url, article.title)
+                if visual_path:
+                    msg_fb = f"{article.content}\n\n # Alkamaria Global News\n#News #{cat_name}"
+                    fb_res = post_to_facebook(visual_path, msg_fb)
                     if fb_res and 'id' in fb_res:
-                        print(f"✅ Publié sur Facebook (ID: {fb_res['id']})")
+                        logger.info(f"Published on Facebook: {article.title[:40]}")
 
-            compteur += 1
-            articles_crees.append(nouveau_art)
-            print(f"🌟 Article '{nouveau_art.title[:40]}' terminé. ⏳ Pause 15s...")
-            time.sleep(15)
+            count += 1
+            articles_created.append(article)
+            logger.info(f"Successfully processed article: '{article.title[:40]}'")
+            time.sleep(15) # Rate limiting respect
+            
         except Exception as e:
-            print(f"❌ Erreur article : {e}")
+            logger.error(f"Error processing item: {e}")
             time.sleep(5)
 
-    if compteur > 0: send_report_email(articles_crees, compteur)
+    if count > 0:
+        try:
+            send_report_email(articles_created, count)
+            logger.info(f"Report email sent for {count} articles.")
+        except Exception as e:
+            logger.error(f"Failed to send report email: {e}")
 
 
 

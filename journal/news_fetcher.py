@@ -1,42 +1,59 @@
+import os
+import logging
 import requests
+from typing import List, Dict
+from dotenv import load_dotenv
 
-def fetch_news():
-    api_key = "13c60d5d863e47e8bb3bf23a106f94ab"
+# Initialize environment variables and logger
+load_dotenv()
+logger = logging.getLogger(__name__)
 
-    # Requête simplifiée sans les apostrophes qui bloquent l'URL
+def fetch_news() -> List[Dict]:
+    """
+    Fetches news from NewsAPI based on predefined queries.
+    Uses environment variables for security and logging for traceability.
+    """
+    api_key = os.getenv("NEWS_API_KEY")
+    if not api_key:
+        logger.error("NEWS_API_KEY not found in environment variables.")
+        return []
+
+    # Define queries
     me_query = "(Iran OR Teheran OR Moyen-Orient OR Liban OR Gaza)"
-    #sport_query = "(Football OR 'Ligue 1' OR Real Madrid OR 'Equipe de France' OR Basketball)"
     sport_query = '(Football OR "Ligue 1" OR "Real Madrid" OR "Equipe de France" OR Basketball)'
-
-    queries = [me_query,sport_query, 'France', 'USA', 'Comores', 'Afrique']
+    queries = [me_query, sport_query, 'France', 'USA', 'Comores', 'Afrique']
+    
     all_articles = []
 
     for query in queries:
         display_name = "Iran/Moyen-Orient" if query == me_query else query
-        print(f" 🔍 Recherche de news pour : {display_name}...")
+        logger.info(f"Searching news for: {display_name}...")
 
-        # ASTUCE : On retire "&language=fr" pour le Moyen-Orient pour capter l'info mondiale
-        # Ton IA Groq se chargera de traduire en français si l'article est en anglais !
+        # Remove language filter for Middle East to get global coverage
         lang = "" if query == me_query else "&language=fr"
-
         url = f'https://newsapi.org/v2/everything?q={query}{lang}&sortBy=publishedAt&apiKey={api_key}'
 
         try:
             response = requests.get(url, timeout=10)
+            response.raise_for_status()
             data = response.json()
 
-            # Debug : voir si l'API répond une erreur
             if data.get('status') == 'error':
-                print(f" ⚠️ NewsAPI dit : {data.get('message')}")
+                logger.warning(f"NewsAPI error for {display_name}: {data.get('message')}")
+                continue
 
-            if data.get('articles'):
+            articles = data.get('articles', [])
+            if articles:
                 limit = 4 if query == me_query else 2
-                all_articles.extend(data['articles'][:limit])
-                print(f" ✅ {len(data['articles'][:limit])} articles trouvés pour {display_name}")
+                selection = articles[:limit]
+                all_articles.extend(selection)
+                logger.info(f"Found {len(selection)} articles for {display_name}")
             else:
-                print(f" ℹ️ Aucun article récent trouvé pour {display_name}")
+                logger.info(f"No recent articles found for {display_name}")
 
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Request error for {display_name}: {e}")
         except Exception as e:
-            print(f" ❌ Erreur NewsAPI pour {display_name}: {e}")
+            logger.error(f"Unexpected error fetching news for {display_name}: {e}")
 
     return all_articles
