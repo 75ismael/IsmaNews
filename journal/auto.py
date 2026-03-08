@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 
 def run():
-    print("🚀 Démarrage de l'automatisation IsmaNews...")
+    print(" Démarrage de l'automatisation IsmaNews...")
 
     # 1. Récupération des news brutes
     news_list = fetch_news()
