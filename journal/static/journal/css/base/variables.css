@@ -1,0 +1,24 @@
+:root {
+    --monde-red: #bc0000;
+    --bg-color: #ffffff;
+    --text-color: #1f1f1f;
+    --monde-grey: #666;
+    --border-color: #e0e0e0;
+    --nav-bg: #ffffff;
+    --sidebar-bg: #f9f9f9;
+    --ai-box-bg: #f0f7ff;
+    --ai-text: #007bff;
+    --card-bg: #ffffff;
+}
+
+body.dark-mode {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --monde-grey: #aaa;
+    --border-color: #333;
+    --nav-bg: #121212;
+    --sidebar-bg: #1a1a1a;
+    --ai-box-bg: #0c1a2b;
+    --ai-text: #4da3ff;
+    --card-bg: #1e1e1e;
+}

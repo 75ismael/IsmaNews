@@ -1,84 +1,41 @@
-
+{% extends "journal/base.html" %}
+{% load static %}
 
 {% block content %}
-<style>
-    #progress-container { 
-        position: fixed; top: 0; left: 0; width: 100%; height: 4px; 
-        background: rgba(0,0,0,0.05); z-index: 10001; 
-    }
-    #progress-bar { height: 100%; background: var(--monde-red); width: 0%; transition: width 0.1s; }
+    <div id="progress-container"><div id="progress-bar"></div></div>
 
-    .article-wrap { max-width: 740px; margin: 40px auto; padding: 0 20px; }
-    .article-header h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 8vw, 3.8rem); line-height: 1.05; margin: 15px 0; font-weight: 900; }
-    .meta-info { font-family: 'Libre Franklin', sans-serif; font-size: 0.85rem; color: var(--monde-grey); display: flex; gap: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 30px; }
+    <div class="article-wrap">
+        <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left"></i> RETOUR</a>
 
-    .article-body { font-family: 'PT Serif', serif; font-size: 1.25rem; line-height: 1.85; color: var(--text-color); }
-    
-    /* Correction de la lettrine pour qu'elle fonctionne avec linebreaks */
-    .article-body p:first-of-type::first-letter {
-        float: left; font-size: 5rem; line-height: 0.85; font-weight: bold; 
-        padding-right: 12px; padding-top: 8px; font-family: 'Playfair Display'; 
-    }
+        <header class="article-header" style="margin-top: 30px;">
+            <span class="category-tag">{{ article.category.name }}</span>
+            <h1>{{ article.title }}</h1>
+            <div class="meta-info">...</div>
+        </header>
 
-    .article-main-img { width: 100%; height: auto; margin-bottom: 10px; border-radius: 2px; }
-    .img-caption { font-size: 0.8rem; color: #888; margin-bottom: 30px; font-family: 'Libre Franklin'; }
-    
-    .share-bar { border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); margin: 50px 0; padding: 20px 0; display: flex; align-items: center; gap: 20px; font-family: 'Libre Franklin', sans-serif; }
-    .share-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--border-color); color: var(--text-color); transition: 0.3s; }
-    .share-btn:hover { background: var(--monde-red); color: white; }
-    .related-box { background: var(--sidebar-bg); padding: 25px; border-left: 4px solid var(--monde-red); margin: 40px 0; }
-</style>
-
-<div id="progress-container">
-    <div id="progress-bar"></div>
-</div>
-
-<div class="article-wrap">
-    <header class="article-header">
-        <span class="category-tag">{{ article.category.name }}</span>
-        <h1>{{ article.title }}</h1>
-        
-        <div class="meta-info">
-            <span><i class="fa-regular fa-calendar"></i> {{ article.published_at|date:"d F Y" }}</span>
-            <span><i class="fa-regular fa-clock"></i> 
-                {% with count=article.content|wordcount %}
-                    {% if count < 200 %}1{% else %}3{% endif %} min de lecture
-                {% endwith %}
-            </span>
+        <div class="article-body">
+            {{ article.content|linebreaks }}
         </div>
-    </header>
 
-    {% if article.image_url %}
-        <img src="{{ article.image_url }}" class="article-main-img" alt="{{ article.title }}">
-        <div class="img-caption">Crédits : {{ article.source }} / IsmaNews</div>
-    {% endif %}
 
-    <div class="article-body">
-        {{ article.content|linebreaks }}
     </div>
 
-    <div class="related-box">
-        <h4 style="margin:0 0 10px 0; font-family:'Libre Franklin'; font-size:0.8rem; text-transform:uppercase; color:var(--monde-red);">À lire aussi</h4>
-        <a href="/" style="font-weight:bold; font-size:1.1rem; color:inherit; text-decoration:none;">
-            Découvrez les dernières analyses de l'intelligence artificielle sur l'actualité mondiale.
-        </a>
-    </div>
 
-    <footer class="share-bar">
-        <span style="font-weight:bold; font-size:0.8rem; text-transform:uppercase;">Partager</span>
-        <a href="#" class="share-btn"><i class="fa-brands fa-facebook-f"></i></a>
-        <a href="#" class="share-btn"><i class="fa-brands fa-x-twitter"></i></a>
-        <a href="#" class="share-btn"><i class="fa-regular fa-envelope"></i></a>
-        <a href="/" style="margin-left:auto; font-size:0.8rem; font-weight:bold; color:var(--monde-red);">RETOUR À L'ACCUEIL</a>
-    </footer>
-</div>
+    <script>
+        // Optimisation de la barre de progression (Throttle pour performance)
+        let ticking = false;
+        window.addEventListener('scroll', function() {
+            if (!ticking) {
+                window.requestAnimationFrame(function() {
+                    let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                    let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                    let scrolled = (winScroll / height) * 100;
+                    document.getElementById("progress-bar").style.width = scrolled + "%";
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+    </script>
 
-<script>
-window.onscroll = function() {
-    let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-    let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    let scrolled = (winScroll / height) * 100;
-    document.getElementById("progress-bar").style.width = scrolled + "%";
-};
-</script>
 {% endblock %}

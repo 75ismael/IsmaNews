@@ -1,0 +1,162 @@
+/* ==========================================================================
+   ISMANEWS - ÉDITION PROFESSIONNELLE (LAYOUT INSTITUTIONNEL)
+   ========================================================================== */
+
+/* 1. ARCHITECTURE GLOBALE */
+.category-container {
+    max-width: 1260px; /* Légèrement plus large pour l'élégance */
+    margin: 50px auto;
+    padding: 0 30px;
+    background-color: var(--bg-color);
+}
+
+/* 2. HEADER DE SECTION HAUT DE GAMME */
+.category-header {
+    border-bottom: 6px double var(--text-color); /* Double ligne : très prestigieux */
+    margin-bottom: 40px;
+    padding-bottom: 25px;
+}
+
+.category-label {
+    font-family: 'Libre Franklin', sans-serif;
+    color: var(--monde-red);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+}
+
+.category-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.8rem;
+    font-weight: 900;
+    margin: 10px 0;
+    line-height: 0.85;
+    letter-spacing: -3px;
+    color: var(--text-color);
+}
+
+/* 3. LA GRILLE ASYMÉTRIQUE (STYLE UNE DE JOURNAL) */
+.category-feed {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Grille de base à 3 colonnes */
+    gap: 0 45px; /* On gère le gap horizontal manuellement pour les bordures */
+}
+
+/* --- L'ARTICLE DE UNE (À GAUCHE, 2/3 DE LARGE) --- */
+.category-item:first-child {
+    grid-column: span 2;
+    border-right: 1px solid var(--border-color);
+    padding-right: 45px;
+    margin-bottom: 50px;
+}
+
+.category-item:first-child .article-image img {
+    height: 480px; /* Grand format impactant */
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.category-item:first-child .article-title {
+    font-size: 3.2rem;
+    line-height: 1.05;
+    margin-bottom: 15px;
+}
+
+/* --- LA COLONNE "EN DIRECT / DERNIÈRES MINUTES" (À DROITE) --- */
+.category-item:nth-child(2),
+.category-item:nth-child(3) {
+    grid-column: span 1;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+}
+
+.category-item:nth-child(2) .article-title,
+.category-item:nth-child(3) .article-title {
+    font-size: 1.6rem;
+    line-height: 1.2;
+}
+
+/* --- LE FLUX SECONDAIRE (GRILLE DU BAS) --- */
+.category-item:nth-child(n+4) {
+    grid-column: span 1;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+/* 4. TRAITEMENT TYPOGRAPHIQUE DES ARTICLES */
+.article-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.article-image img {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    filter: grayscale(10%); /* Look presse papier */
+    transition: filter 0.4s ease, transform 0.6s ease;
+}
+
+.category-item:hover .article-image img {
+    filter: grayscale(0%);
+    transform: scale(1.03);
+}
+
+.article-title a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    transition: color 0.2s;
+}
+
+.article-title a:hover {
+    color: var(--monde-red);
+}
+
+.article-excerpt {
+    font-family: 'PT Serif', serif;
+    font-size: 1.05rem;
+    color: var(--text-color);
+    line-height: 1.6;
+    margin-top: 12px;
+    opacity: 0.85;
+    /* Coupe propre du texte */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* 5. MÉTA-DONNÉES ÉPURÉES */
+.article-meta {
+    margin-top: 15px;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--monde-grey);
+}
+
+.article-meta .source {
+    color: var(--monde-red);
+    font-weight: 900;
+    margin-right: 8px;
+}
+
+/* 6. RESPONSIVE DESIGN */
+@media (max-width: 1024px) {
+    .category-feed { grid-template-columns: repeat(2, 1fr); gap: 30px; }
+    .category-item:first-child { grid-column: span 2; border-right: none; padding-right: 0; }
+    .category-item:nth-child(n+2) { grid-column: span 1; }
+}
+
+@media (max-width: 768px) {
+    .category-feed { grid-template-columns: 1fr; }
+    .category-item:first-child { grid-column: span 1; }
+    .category-title { font-size: 3.2rem; }
+    .category-item:first-child .article-title { font-size: 2.2rem; }
+}

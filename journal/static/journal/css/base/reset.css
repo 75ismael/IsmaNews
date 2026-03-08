@@ -1,0 +1,69 @@
+/*C'est ici que réside toute la logique des couleurs et du Dark Mode.*/
+
+
+
+
+
+/*Tu as tout à fait raison, on ne peut pas construire une maison sur un terrain accidenté ! Le reset.css est l'outil qui "aplatit" le terrain.
+ar défaut, chaque navigateur applique ses propres styles (Chrome met une marge sur le body, Firefox en met sur les listes, etc.).
+Le reset garantit que ton site IsmaNews aura exactement le même aspect partout.*/
+
+
+/* 1. Box sizing : permet de gérer les bordures sans casser la largeur des blocs */
+
+
+html {
+    -webkit-text-size-adjust: 100%; /* Empêche le changement de taille auto sur iPhone */
+    height: 100%;
+}
+
+body {
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100%;
+    overflow-x: hidden; /* Empêche le scroll horizontal parasite */
+}
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* 2. Suppression des marges par défaut pour tout le monde */
+* {
+    margin: 0;
+    padding: 0;
+}
+
+/* 3. Amélioration du rendu des polices et de la hauteur de ligne */
+body {
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* 4. Les images deviennent fluides (ne dépassent jamais de leur parent) */
+img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+}
+
+/* 5. Suppression des styles de listes (pour ton menu de navigation) */
+ul, ol {
+    list-style: none;
+}
+
+/* 6. On enlève le soulignement des liens par défaut */
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* 7. On force les polices à hériter du parent pour les inputs et boutons */
+input, button, textarea, select {
+    font: inherit;
+}
+
+/* 8. Suppression de la bordure par défaut des boutons */
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}

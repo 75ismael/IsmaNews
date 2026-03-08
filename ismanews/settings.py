@@ -25,6 +25,8 @@ SECRET_KEY = 'django-insecure-z&3ixv(yr#_aux5hu!!a7qobyyus56@6vt=$*x304e2t)l4to3
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+STATIC_URL = '/static/'
+
 ALLOWED_HOSTS = []
 
 
@@ -69,14 +71,15 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug', # Recommandé d'ajouter celui-ci
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'journal.context_processors.global_journal_data', # ON GARDE UNIQUEMENT CELUI-LA
             ],
         },
     },
 ]
-
 WSGI_APPLICATION = 'ismanews.wsgi.application'
 
 

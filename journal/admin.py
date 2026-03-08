@@ -2,8 +2,42 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import (
     Category, Article, AuthorProfile, EditorProfile, 
-    Comment, View, Subscription, Approval, Tag, Trending
+    Comment, View, Subscription, Approval, Tag, Trending,Newspaper
 )
+
+
+@admin.register(Newspaper)
+class NewspaperAdmin(admin.ModelAdmin):
+    # 1. On affiche plus d'infos dans la liste
+    list_display = ('name', 'target_country', 'slug', 'color_preview', 'article_count')
+
+
+    
+    # 2. On ajoute des filtres qui font apparaître la barre à droite
+    # Note: Filtrer par 'name' est peu utile, filtrer par date est mieux
+    list_filter = ('target_country',)
+    
+    # 3. Recherche rapide
+    search_fields = ('name', 'slug', 'target_country')
+    
+    # 4. Remplissage automatique du slug pendant la frappe
+    prepopulated_fields = {'slug': ('name',)}
+    list_editable = ('target_country', 'slug')
+
+    # --- MÉTHODES PERSONNALISÉES ---
+
+    def color_preview(self, obj):
+        return format_html(
+            '<div style="width:30px; height:20px; background:{}; border-radius:3px; border:1px solid #ccc;"></div>',
+            obj.color_code
+        )
+    color_preview.short_description = "Couleur"
+
+    def article_count(self, obj):
+        # Affiche le nombre d'articles liés à ce journal
+        return obj.articles.count()
+    article_count.short_description = "Nb Articles"
+    
 
 # --- ACTIONS DE MASSE ---
 @admin.action(description='🚀 Publier les articles sélectionnés')
@@ -13,46 +47,43 @@ def make_published(modeladmin, request, queryset):
 # --- CONFIGURATION DES ARTICLES ---
 @admin.register(Article)
 class ArticleAdmin(admin.ModelAdmin):
-    # Colonnes de la liste
-    list_display = ('title', 'display_category', 'author_link', 'status', 'view_count_colored', 'published_at')
-    list_filter = ('status', 'category', 'published_at', 'author')
-    # Recherche étendue (titre, contenu, nom de l'auteur et de la catégorie)
-    search_fields = ('title', 'content', 'author__user__username', 'category__name')
+    # On ajoute 'newspaper' et les badges de mise en avant
+    list_display = ('title', 'newspaper', 'display_category', 'status', 'is_breaking', 'is_ai', 'published_at')
+    list_filter = ('newspaper', 'status', 'category', 'is_breaking_news', 'is_ai_selection')
+    search_fields = ('title', 'content', 'newspaper__name')
     prepopulated_fields = {'slug': ('title',)}
     actions = [make_published]
     
-    # Organisation de la page d'édition (layout)
     fieldsets = (
-        ('Contenu Rédactionnel', {
-            'fields': ('title', 'slug', 'category', 'summary', 'content'),
-            'description': 'Rédigez ici le cœur de votre article.'
+        ('Journal & Rubrique', {
+            'fields': ('newspaper', 'category', 'author'),
         }),
-        ('Équipe & Validation', {
-            'fields': ('author', 'status', 'published_at'),
-            'classes': ('collapse',), # Masquable par défaut
+        ('Contenu Rédactionnel', {
+            'fields': ('title', 'slug', 'summary', 'content'),
+        }),
+        ('Mise en Avant (Home Page)', {
+            'fields': ('is_headline', 'is_breaking_news', 'is_ai_selection'),
+            'description': 'Cochez ces cases pour afficher l\'article dans les sections spéciales du Home.'
         }),
         ('Médias & Référencement', {
-            'fields': ('image_url', 'source', 'source_url'),
+            'fields': ('image_url', 'source', 'source_url', 'status', 'published_at'),
         }),
     )
+
+    # Petites icônes visuelles pour la liste admin
+    def is_breaking(self, obj):
+        return obj.is_breaking_news
+    is_breaking.boolean = True
+    is_breaking.short_description = "🔥 Urgent"
+
+    def is_ai(self, obj):
+        return obj.is_ai_selection
+    is_ai.boolean = True
+    is_ai.short_description = "🧠 IA"
 
     def display_category(self, obj):
         return obj.category.name if obj.category else "-"
     display_category.short_description = "Rubrique"
-
-    def author_link(self, obj):
-        if obj.author:
-            return format_html('<a href="/admin/journal/authorprofile/{}/change/">👤 {}</a>', 
-                               obj.author.id, obj.author.user.username)
-        return "-"
-    author_link.short_description = "Rédacteur"
-
-    def view_count_colored(self, obj):
-        color = "#28a745" if obj.views > 1000 else "#fd7e14" if obj.views > 100 else "#6c757d"
-        return format_html('<span style="background:{}; color:white; padding:3px 8px; border-radius:10px; font-size:11px;">{} vues</span>', 
-                           color, obj.views)
-    view_count_colored.short_description = "Performance"
-
 # --- GESTION DES AUTEURS ---
 @admin.register(AuthorProfile)
 class AuthorAdmin(admin.ModelAdmin):

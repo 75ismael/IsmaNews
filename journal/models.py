@@ -2,10 +2,29 @@ from django.db import models
 from django.utils.text import slugify
 from django.contrib.auth.models import User
 
+class Newspaper(models.Model):
+    name = models.CharField(max_length=100) # ex: IsmaNews Afrique
+    slug = models.SlugField(unique=True)
+    description = models.TextField(blank=True)
+    logo_url = models.URLField(max_length=500, blank=True, null=True)
+    color_code = models.CharField(max_length=7, default="#bc0000") # Pour le design du journal
+    target_country = models.CharField(max_length=10, choices=[('KM', 'Comores'), ('FR', 'France'), ('AF', 'Afrique'), ('INT', 'International')], default='INT')
+
+    class Meta:
+        verbose_name = "Journal"
+        verbose_name_plural = "Journaux"
+
+    def __str__(self):
+        return self.name
+
+
+
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
+    icon_class = models.CharField(max_length=50, blank=True, help_text="Ex: fa-stethoscope")
     # Modifie cette ligne dans la classe Article
     #slug = models.SlugField(max_length=300, unique=False, null=True, blank=True)
     # On autorise le vide et on retire UNIQUE temporairement
@@ -26,17 +45,22 @@ class Article(models.Model):
         ("published", "Publié")
     ]
 
+    # --- LIAISON MULTI-JOURNAUX ---
+    newspaper = models.ForeignKey(Newspaper, on_delete=models.CASCADE, related_name="articles", null=True)
+    
     title = models.CharField(max_length=300)
-    # On aligne la taille du slug sur celle du titre
     slug = models.SlugField(max_length=300, unique=True, blank=True, null=True)
     summary = models.TextField()
     content = models.TextField()
     
-    # --- LES CHAMPS MANQUANTS À RÉAJOUTER ---
+    # --- OPTIONS DE MISE EN AVANT (Pour ton plan visuel) ---
+    is_breaking_news = models.BooleanField(default=False) # Pour le bandeau rouge clignotant
+    is_ai_selection = models.BooleanField(default=False)  # Pour le bloc "Sélection IA"
+    is_headline = models.BooleanField(default=False)      # Pour la grande "Une"
+    
     source = models.CharField(max_length=200, blank=True, null=True)
     source_url = models.URLField(max_length=500, blank=True, null=True)
     image_url = models.URLField(max_length=500, blank=True, null=True)
-    # ----------------------------------------
 
     # RELATIONS
     author = models.ForeignKey("AuthorProfile", on_delete=models.PROTECT, related_name="articles")
@@ -48,8 +72,9 @@ class Article(models.Model):
     views = models.PositiveIntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return self.title
+        return f"[{self.newspaper.name if self.newspaper else 'Sans Journal'}] {self.title}"
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -58,7 +83,6 @@ class Article(models.Model):
 
     class Meta:
         ordering = ['-published_at']
-
 
 
 # =====================================================

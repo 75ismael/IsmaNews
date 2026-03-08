@@ -1,0 +1,27 @@
+/* ==========================================================================
+   ISMANEWS - MAIN STYLESHEET (Architecture Modulaire)
+   ========================================================================== */
+
+/* 1. BASE : Les réglages globaux et variables */
+@import 'base/variables.css';
+@import 'base/reset.css';
+@import 'base/typography.css';
+
+/* 2. LAYOUT : La structure de la page */
+@import 'layout/grid.css';
+@import 'layout/header.css';
+@import 'layout/navigation.css';
+@import 'layout/footer.css';
+
+/* 3. COMPONENTS : Les éléments réutilisables partout */
+@import 'components/buttons.css';
+@import 'components/article-card.css';
+@import 'components/tags.css';
+
+
+
+/* main.css */
+/* Utilise des chemins relatifs sans slash au début si tes dossiers sont au même niveau */
+@import url("base/variables.css");
+@import url("base/reset.css");
+@import url("pages/category.css");

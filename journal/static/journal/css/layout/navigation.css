@@ -1,0 +1,38 @@
+/*La gestion de ton menu International / France.*/
+
+.main-nav {
+    border-top: 1px solid var(--text-color);
+    border-bottom: 4px double var(--text-color);
+    background: var(--nav-bg);
+    position: sticky;
+    top: 35px;
+    z-index: 1000;
+}
+.nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+.nav-links {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-x: auto;
+}
+.nav-links a {
+    padding: 15px 18px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+.nav-links a:hover { color: var(--monde-red); }
+
+@media (max-width: 768px) {
+    .main-nav { top: 0; }
+}

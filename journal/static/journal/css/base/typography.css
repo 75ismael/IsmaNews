@@ -1,0 +1,18 @@
+
+/*On définit les polices par défaut et les comportements du corps de texte.*/
+body {
+    font-family: 'PT Serif', serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    transition: background 0.3s, color 0.3s;
+}
+
+.logo a {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -3px;
+}
+
+.sidebar-title, .top-bar, .nav-links a, .category-tag {
+    font-family: 'Libre Franklin', sans-serif;
+}

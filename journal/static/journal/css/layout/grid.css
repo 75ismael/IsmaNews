@@ -1,0 +1,30 @@
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    display: grid;
+    /* On garde tes colonnes 8fr 4fr */
+    grid-template-columns: 8fr 4fr;
+    gap: 40px;
+    padding: 0 20px;
+}
+
+/* On ajoute le filet vertical sur la partie gauche (main) */
+.container main {
+    border-right: 1px solid var(--border-color); /* Utilise ta variable de bordure */
+    padding-right: 40px; /* Espace entre le texte et la ligne */
+}
+
+/* On retire la ligne sur mobile pour ne pas que ce soit moche */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .container main {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid var(--border-color); /* Ligne horizontale sur mobile */
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+}

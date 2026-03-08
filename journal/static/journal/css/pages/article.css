@@ -1,0 +1,106 @@
+/* ==========================================================================
+   ISMANEWS - LECTURE ARTICLE (STYLE ÉDITORIAL)
+   ========================================================================== */
+
+/* --- 1. BARRE DE PROGRESSION --- */
+#progress-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    z-index: 1000;
+}
+
+#progress-bar {
+    height: 100%;
+    background: var(--monde-red);
+    width: 0%;
+    transition: width 0.1s ease-out;
+}
+
+/* --- 2. CONTENEUR DE LECTURE --- */
+.article-wrap {
+    max-width: 800px; /* Largeur optimale pour la lecture (65-75 caractères par ligne) */
+    margin: 60px auto;
+    padding: 0 20px;
+    background-color: var(--bg-color);
+}
+
+.btn-back {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-decoration: none;
+    color: var(--monde-grey);
+    letter-spacing: 1px;
+    transition: color 0.3s;
+}
+
+.btn-back:hover { color: var(--monde-red); }
+
+/* --- 3. EN-TÊTE DE L'ARTICLE --- */
+.article-header {
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 30px;
+}
+
+.category-tag {
+    color: var(--monde-red);
+    font-family: 'Libre Franklin', sans-serif;
+    text-transform: uppercase;
+    font-weight: 900;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+}
+
+.article-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem; /* Très grand pour l'impact */
+    line-height: 1.1;
+    margin: 15px 0;
+    color: var(--text-color);
+    font-weight: 900;
+}
+
+.meta-info {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.85rem;
+    color: var(--monde-grey);
+}
+
+/* --- 4. CORPS DE L'ARTICLE (LE PLUS IMPORTANT) --- */
+.article-body {
+    font-family: 'PT Serif', serif; /* Serif pour la lecture longue */
+    font-size: 1.25rem; /* Taille confortable */
+    line-height: 1.8; /* Espacement aéré pour éviter la fatigue visuelle */
+    color: var(--text-color);
+    text-align: justify; /* Look journal papier */
+    hyphens: auto;
+}
+
+/* Lettrine (La première lettre du premier paragraphe est plus grande) */
+.article-body p:first-of-type::first-letter {
+    float: left;
+    font-size: 4.5rem;
+    line-height: 1;
+    padding-top: 4px;
+    padding-right: 12px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    color: var(--text-color);
+}
+
+/* Gestion des espacements entre paragraphes */
+.article-body p {
+    margin-bottom: 25px;
+}
+
+/* --- 5. RESPONSIVE --- */
+@media (max-width: 768px) {
+    .article-header h1 { font-size: 2.2rem; }
+    .article-body { font-size: 1.15rem; text-align: left; }
+    .article-wrap { margin: 30px auto; }
+}

@@ -1,0 +1,29 @@
+/* components/tags.css
+
+ c'est ici que l'on gère l'apparence des petits badges de catégorie que l'on voit sur les images ou au-dessus des titres.
+ Le Tag est un petit composant (un "objet") que tu peux coller n'importe où (sur la home, dans l'article, dans la sidebar).
+
+
+
+
+ */
+
+.category-tag {
+    color: var(--monde-red);
+    font-family: 'Libre Franklin', sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+/* Optionnel : un style de badge plein si tu veux varier */
+.tag-filled {
+    background: var(--monde-red);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+}

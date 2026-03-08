@@ -1,0 +1,148 @@
+{% load static %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IsmaNews | Hub Média International</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Libre+Franklin:wght@300;400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <link rel="stylesheet" href="{% static 'journal/css/main.css' %}?v={% now 'U' %}">
+
+    {% block extra_head %}{% endblock %}
+
+    <style>
+        /* Garde seulement le strict minimum ici pour le logo */
+        .logo-container { text-align: center; padding: 20px 0; width: 100%; }
+        .logo-container img { max-height: 80px; width: auto; display: block; margin: 0 auto; }
+    </style>
+</head>
+<body class="{% if request.COOKIES.darkMode == 'true' %}dark-mode{% endif %}">
+
+{% if breaking %}
+    <div class="breaking-news">
+        <div class="breaking-container">
+            <span class="breaking-label">URGENT</span>
+            <marquee onmouseover="this.stop();" onmouseout="this.start();">
+                {% for n in breaking %}
+                    <a href="{% url 'article' n.id %}" style="color:white; text-decoration:none; font-family:'Libre Franklin'; font-weight:bold;">
+                        {{ n.title }}
+                    </a> &nbsp;&nbsp;&nbsp;&nbsp;•&nbsp;&nbsp;&nbsp;&nbsp;
+                {% endfor %}
+            </marquee>
+        </div>
+    </div>
+
+    <script>
+        // GÉOLOCALISATION AUTOMATIQUE
+        window.addEventListener('load', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // On n'exécute la détection que si aucun pays n'est déjà sélectionné dans l'URL
+            if (!urlParams.has('country')) {
+                fetch('https://ipapi.co/json/')
+                    .then(response => response.json())
+                    .then(data => {
+                        const countryCode = data.country_code; // Ex: "KM", "FR", "US"
+
+                        // On définit les pays que ton site gère vraiment
+                        const managedCountries = ['KM', 'FR', 'AF'];
+
+                        if (managedCountries.includes(countryCode)) {
+                            // Redirection vers la version locale
+                            window.location.href = window.location.pathname + "?country=" + countryCode;
+                        }
+                    })
+                    .catch(err => console.log("Localisation non disponible"));
+            }
+        });
+    </script>
+{% endif %}
+
+<div class="top-bar">
+    <div class="top-bar-content">
+        <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--monde-grey);">{{ now|date:"l d F Y" }}</span>
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <button id="darkModeBtn" onclick="toggleDarkMode()" style="background:none; border:1px solid var(--border-color); color:var(--text-color); cursor:pointer; padding:6px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold;">
+                <span id="darkIcon">🌓</span> MODE
+            </button>
+            <form action="{% url 'search' %}" method="get">
+                <input type="text" name="q" placeholder="Recherche..." style="border-radius:20px; border:1px solid var(--border-color); padding:4px 12px; font-size:0.8rem; background:transparent; color:var(--text-color); width:120px;">
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="logo-container">
+    <a href="/">
+        <img src="{% static 'journal/images/logo.png' %}" alt="Alkamaria Global News" style="max-height: 80px; width: auto;">
+    </a>
+</div>
+
+<nav class="main-nav">
+    <div class="nav-inner">
+        <div class="nav-links">
+            <a href="/" style="color: var(--monde-red);"><i class="fa fa-home"></i></a>
+            {% for j in newspapers %}
+                <a href="{% url 'newspaper_detail' j.slug %}">{{ j.name }}</a>
+            {% endfor %}
+            <span style="border-left: 1px solid var(--border-color); margin: 0 10px;"></span>
+            {% for cat in categories|slice:":5" %}
+                <a href="{% url 'category' cat.slug %}" style="font-weight:400; opacity:0.8;">{{ cat.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</nav>
+
+
+    {% block content %}{% endblock %}
+
+
+<footer>
+
+    <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px; text-align:left;">
+        <div>
+            <h2 style="font-family:'Playfair Display'; font-size:2.5rem; margin:0;">Alkamaria</h2>
+            <p style="opacity:0.7; font-size:0.9rem;">Le premier média global piloté par intelligence artificielle.</p>
+        </div>
+        <div>
+            <h4 style="text-transform:uppercase; font-size:0.8rem; border-bottom:1px solid #333; padding-bottom:10px;">Éditions</h4>
+            {% for j in newspapers %}
+                <a href="{% url 'newspaper_detail' j.slug %}" style="color:#aaa; text-decoration:none; display:block; margin-bottom:8px; font-size:0.85rem;">{{ j.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <div style="margin-top:50px; opacity:0.4; font-size:0.7rem; border-top:1px solid #222; padding-top:20px;">
+        © 2026 IsmaNews Media Group — Powered by Isma AI Engine
+    </div>
+</footer>
+
+<script>
+    // GESTION MODE SOMBRE
+    function toggleDarkMode() {
+        const body = document.body;
+        const icon = document.getElementById('darkIcon');
+        const isDark = body.classList.toggle('dark-mode');
+
+        // Mise à jour de l'icône
+        icon.innerText = isDark ? '☀️' : '🌙';
+
+        // Sauvegarde dans le cookie pour Django
+        document.cookie = "darkMode=" + isDark + "; path=/; max-age=" + (60*60*24*30);
+
+        // Sauvegarde locale pour le JS
+        localStorage.setItem('darkMode', isDark);
+    }
+
+    // Init icône au chargement
+    window.onload = () => {
+        const isDark = document.body.classList.contains('dark-mode');
+        document.getElementById('darkIcon').innerText = isDark ? '☀️' : '🌙';
+    }
+</script>
+
+</body>
+</html>
+
+
