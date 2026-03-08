@@ -57,7 +57,7 @@ def generate_article_content(article_data: Dict) -> str:
         # Cleanup labels if AI ignored instructions
         labels_to_remove = [
             "ACCROCHE :", "DÉVELOPPEMENT :", "ENJEUX :", "CONCLUSION :",
-            "UNE ACCROCHE :", "🔍 CONCLUSION :", "🌍 ENJEUX :", "📝 DÉVELOPPEMENT :", "📰 UNE ACCROCHE :"
+            "UNE ACCROCHE :", "🔍 CONCLUSION :", " ENJEUX :", " DÉVELOPPEMENT :", " UNE ACCROCHE :"
         ]
         for label in labels_to_remove:
             content = content.replace(label, "")
