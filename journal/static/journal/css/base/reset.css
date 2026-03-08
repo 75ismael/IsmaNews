@@ -9,7 +9,7 @@ ar défaut, chaque navigateur applique ses propres styles (Chrome met une marge 
 Le reset garantit que ton site IsmaNews aura exactement le même aspect partout.*/
 
 
-/* 1. Box sizing : permet de gérer les bordures sans casser la largeur des blocs */
+/* . Box sizing : permet de gérer les bordures sans casser la largeur des blocs */
 
 
 html {
@@ -27,41 +27,41 @@ body {
     box-sizing: border-box;
 }
 
-/* 2. Suppression des marges par défaut pour tout le monde */
+/* . Suppression des marges par défaut pour tout le monde */
 * {
     margin: 0;
     padding: 0;
 }
 
-/* 3. Amélioration du rendu des polices et de la hauteur de ligne */
+/* . Amélioration du rendu des polices et de la hauteur de ligne */
 body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
-/* 4. Les images deviennent fluides (ne dépassent jamais de leur parent) */
+/* . Les images deviennent fluides (ne dépassent jamais de leur parent) */
 img, picture, video, canvas, svg {
     display: block;
     max-width: 100%;
 }
 
-/* 5. Suppression des styles de listes (pour ton menu de navigation) */
+/* . Suppression des styles de listes (pour ton menu de navigation) */
 ul, ol {
     list-style: none;
 }
 
-/* 6. On enlève le soulignement des liens par défaut */
+/* . On enlève le soulignement des liens par défaut */
 a {
     text-decoration: none;
     color: inherit;
 }
 
-/* 7. On force les polices à hériter du parent pour les inputs et boutons */
+/* . On force les polices à hériter du parent pour les inputs et boutons */
 input, button, textarea, select {
     font: inherit;
 }
 
-/* 8. Suppression de la bordure par défaut des boutons */
+/* . Suppression de la bordure par défaut des boutons */
 button {
     border: none;
     background: none;
