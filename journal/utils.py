@@ -56,7 +56,7 @@ def post_to_facebook(image_path: str, message: str) -> dict:
 
 def send_report_email(articles: list, count: int):
     """Sends a summary report of newly published articles."""
-    subject = f"📰 IsmaNews : {count} nouveaux articles"
+    subject = f" IsmaNews : {count} nouveaux articles"
     to = [settings.EMAIL_HOST_USER]
     
     items_html = "".join([f'<li><b>{a.category.name}</b>: {a.title}</li>' for a in articles])
