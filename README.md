@@ -8,11 +8,12 @@ Ce projet a été conçu pour démontrer l'intégration de flux de données exte
 
 ## 🚀 Fonctionnalités Clés
 
-- **Extraction Intelligente** : Récupération automatisée des actualités via NewsAPI (ciblant la France, l'Iran, et d'autres régions stratégiques).
-- **Rédaction par IA** : Utilisation de **Groq / Llama 3** pour transformer des dépêches brutes en articles structurés, engageants et optimisés pour la lecture.
-- **Gestion de Contenu (CMS)** : Interface d'administration Django permettant la validation humaine (draft/publié), la gestion des catégories et des auteurs.
-- **Automatisation Totale** : Système de tâches planifiées (Cron) déclenchant le cycle de production toutes les 4 heures.
-- **SEO & Performance** : Slugs automatiques, architecture légère et interface réactive.
+- **Extraction Intelligente** : Récupération automatisée des actualités (ciblant la France, Iran, etc.) via *NewsAPI*.
+- **Rédaction par IA** : Utilisation de **Groq / Llama 3** pour transformer des dépêches brutes en articles structurés et engageants, ainsi que génération de miniatures.
+- **Publication Multi-Canale** : Auto-publication sur Facebook via l'API Graph (`social_utils.py`).
+- **Gestion CRM Lecteurs** : Abonnement Newsletter avec respect du RGPD (*Double Opt-In*) et désabonnement en 1-clic.
+- **Automatisation Totale** : Le CMS s'alimente et envoie ses courriels tout seul grâce aux requêtes planifiées (`cron`).
+- **Comptes Utilisateurs** : Système d'authentification robuste avec designs premium.
 
 ---
 

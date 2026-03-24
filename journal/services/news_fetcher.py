@@ -46,6 +46,11 @@ def fetch_news() -> List[Dict]:
             if articles:
                 limit = 4 if query == me_query else 2
                 selection = articles[:limit]
+                
+                # Tagging the geographical origin for the AI Generator
+                for s in selection:
+                    s['_geo_query'] = query
+
                 all_articles.extend(selection)
                 logger.info(f"Found {len(selection)} articles for {display_name}")
             else:

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IsmaNews | Hub Média International</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Libre+Franklin:wght@300;400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Libre+Franklin:wght@300;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <link rel="stylesheet" href="{% static 'journal/css/main.css' %}?v={% now 'U' %}">
@@ -13,7 +13,7 @@
     {% block extra_head %}{% endblock %}
 
     <style>
-        /* Garde seulement le strict minimum ici pour le logo */
+        /* Pour Garder seulement le strict minimum ici pour le logo */
         .logo-container { text-align: center; padding: 20px 0; width: 100%; }
         .logo-container img { max-height: 80px; width: auto; display: block; margin: 0 auto; }
     </style>
@@ -35,41 +35,87 @@
     </div>
 
     <script>
-        // GÉOLOCALISATION AUTOMATIQUE
+        // GÉOLOCALISATION AUTOMATIQUE INTELLIGENTE (V2)
         window.addEventListener('load', function() {
-            const urlParams = new URLSearchParams(window.location.search);
+            // Uniquement actif sur la page d'accueil globale
+            if (window.location.pathname === '/' && !sessionStorage.getItem('geo_localized')) {
+                sessionStorage.setItem('geo_localized', 'true'); // Évite les redémarrages en boucle
+                
+                // On importe dynamiquement les Slugs créés dans le panel Admin Django
+                const EDITION_MAP = {
+                    {% for j in newspapers %}
+                    "{{ j.target_country }}": "{{ j.slug }}",
+                    {% endfor %}
+                };
 
-            // On n'exécute la détection que si aucun pays n'est déjà sélectionné dans l'URL
-            if (!urlParams.has('country')) {
                 fetch('https://ipapi.co/json/')
                     .then(response => response.json())
                     .then(data => {
-                        const countryCode = data.country_code; // Ex: "KM", "FR", "US"
-
-                        // On définit les pays que ton site gère vraiment
-                        const managedCountries = ['KM', 'FR', 'AF'];
-
-                        if (managedCountries.includes(countryCode)) {
-                            // Redirection vers la version locale
-                            window.location.href = window.location.pathname + "?country=" + countryCode;
+                        const country = data.country_code; // Ex: "FR", "SA", "SN"
+                        const continent = data.continent_code; // Ex: "EU", "AF"
+                        let targetCode = 'INT'; 
+                        
+                        // Liste de base du Moyen-Orient (Car IPAPI le classe en Asie)
+                        const middleEast = ['SA','AE','QA','KW','OM','BH','YE','SY','LB','JO','IQ','IR','IL','PS','EG'];
+                        
+                        if (country === 'KM') targetCode = 'KM';
+                        else if (country === 'FR') targetCode = 'FR';
+                        else if (middleEast.includes(country)) targetCode = 'MO';
+                        else if (continent === 'AF') targetCode = 'AF';
+                        else if (continent === 'EU') targetCode = 'EUR';
+                        else if (continent === 'AS') targetCode = 'AS';
+                        else if (continent === 'NA' || continent === 'SA') targetCode = 'AM';
+                        
+                        // Si le journal pour cette région a été créé dans votre Panneau d'Administration !
+                        if (EDITION_MAP[targetCode] && targetCode !== 'INT') {
+                            // On redirige silencieusement vers l'url /edition/<slug>/
+                            window.location.replace("/edition/" + EDITION_MAP[targetCode] + "/");
                         }
                     })
-                    .catch(err => console.log("Localisation non disponible"));
+                    .catch(err => console.log("Géo-protection silencieuse : Service API injoignable."));
             }
         });
     </script>
 {% endif %}
 
 <div class="top-bar">
-    <div class="top-bar-content">
-        <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--monde-grey);">{{ now|date:"l d F Y" }}</span>
-        <div style="display: flex; gap: 15px; align-items: center;">
-            <button id="darkModeBtn" onclick="toggleDarkMode()" style="background:none; border:1px solid var(--border-color); color:var(--text-color); cursor:pointer; padding:6px 12px; border-radius:20px; font-size:0.75rem; font-weight:bold;">
-                <span id="darkIcon">🌓</span> MODE
+    <div class="top-bar-content" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+        <!-- LEFT SIDE: MENU & SEARCH -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <button class="hamburger-btn" onclick="toggleDrawer(true)" style="background:none; border:none; padding: 0; cursor:pointer; font-size:1.3rem; display: flex; align-items:center; gap: 8px; color: var(--text-color);">
+                <i class="fa fa-bars"></i>
+                <span style="font-size: 0.75rem; font-weight: 900; text-transform: uppercase;">Menu</span>
             </button>
-            <form action="{% url 'search' %}" method="get">
-                <input type="text" name="q" placeholder="Recherche..." style="border-radius:20px; border:1px solid var(--border-color); padding:4px 12px; font-size:0.8rem; background:transparent; color:var(--text-color); width:120px;">
+            <form action="{% url 'search' %}" method="get" class="top-bar-search-form" style="margin: 0;">
+                <div style="position: relative;">
+                    <input type="text" name="q" placeholder="Recherche..." style="border-radius:20px; border:1px solid var(--border-color); padding:5px 12px 5px 32px; font-size:0.75rem; background:transparent; color:var(--text-color); width:130px;">
+                    <i class="fa fa-search" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; opacity: 0.5;"></i>
+                </div>
             </form>
+            <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--monde-grey); margin-left: 10px;">{{ now|date:"l d F Y" }}</span>
+        </div>
+        
+        <!-- RIGHT SIDE: LOGIN / REGISTER / MODE -->
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div class="top-bar-utility" style="display: flex; gap: 15px; align-items: center;">
+                {% if user.is_authenticated %}
+                    <span style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa fa-user-circle" style="color: var(--monde-red);"></i> 
+                        <b>{{ user.username }}</b>
+                    </span>
+                    <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none; border:none; color:var(--monde-red); cursor:pointer; font-size:0.75rem; font-weight:bold; padding: 0;">Déconnexion</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" style="text-decoration:none; color:var(--text-color); font-size:0.8rem; font-weight:bold;">Se connecter</a>
+                    <a href="{% url 'signup' %}" style="text-decoration:none; color:var(--monde-red); font-size:0.8rem; font-weight:bold; border: 1px solid var(--monde-red); padding: 4px 10px; border-radius: 12px;">Créer un compte</a>
+                {% endif %}
+                
+                <button id="darkModeBtn" onclick="toggleDarkMode()" style="background:none; border:none; color:var(--text-color); cursor:pointer; font-size:1.1rem; padding: 0; margin-left: 5px;">
+                    <span id="darkIcon">🌓</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -85,16 +131,47 @@
         <div class="nav-links">
             <a href="/" style="color: var(--monde-red);"><i class="fa fa-home"></i></a>
             {% for j in newspapers %}
-                <a href="{% url 'newspaper_detail' j.slug %}">{{ j.name }}</a>
+                <a href="{% url 'newspaper_detail' j.slug %}" style="font-weight:700;">{{ j.name }}</a>
             {% endfor %}
             <span style="border-left: 1px solid var(--border-color); margin: 0 10px;"></span>
             {% for cat in categories|slice:":5" %}
-                <a href="{% url 'category' cat.slug %}" style="font-weight:400; opacity:0.8;">{{ cat.name }}</a>
+                {% if active_edition %}
+                    <a href="{% url 'category_in_edition' active_edition.slug cat.slug %}" style="font-weight:400; opacity:0.8;">{{ cat.name }}</a>
+                {% else %}
+                    <a href="{% url 'category' cat.slug %}" style="font-weight:400; opacity:0.8;">{{ cat.name }}</a>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
 </nav>
 
+
+    {% if messages %}
+        <div class="toast-container" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; text-align: center;">
+            {% for message in messages %}
+                <div style="padding: 15px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); font-family: 'Libre Franklin', sans-serif; font-weight: bold; font-size: 0.95rem; color: white; animation: slideDown 0.4s ease-out;
+                    {% if message.tags == 'success' %}background-color: #28a745;{% elif message.tags == 'warning' %}background-color: #ffc107; color: black;{% else %}background-color: var(--monde-red);{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+        <script>
+            setTimeout(() => {
+                const toasts = document.querySelector('.toast-container');
+                if (toasts) {
+                    toasts.style.transition = "opacity 0.5s ease-out";
+                    toasts.style.opacity = "0";
+                    setTimeout(() => toasts.remove(), 500);
+                }
+            }, 5000);
+        </script>
+        <style>
+            @keyframes slideDown {
+                from { transform: translateY(-20px); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+        </style>
+    {% endif %}
 
     {% block content %}{% endblock %}
 
@@ -102,7 +179,7 @@
 <footer>
 
     <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:40px; text-align:left;">
-        <div>
+        <div style="grid-column: span 1;">
             <h2 style="font-family:'Playfair Display'; font-size:2.5rem; margin:0;">Alkamaria</h2>
             <p style="opacity:0.7; font-size:0.9rem;">Le premier média global piloté par intelligence artificielle.</p>
         </div>
@@ -112,9 +189,23 @@
                 <a href="{% url 'newspaper_detail' j.slug %}" style="color:#aaa; text-decoration:none; display:block; margin-bottom:8px; font-size:0.85rem;">{{ j.name }}</a>
             {% endfor %}
         </div>
+        <div style="grid-column: span 1;">
+            <h4 style="text-transform:uppercase; font-size:0.8rem; border-bottom:1px solid #333; padding-bottom:10px;">Newsletter</h4>
+            <p style="opacity:0.7; font-size:0.85rem; margin-bottom: 15px;">Abonnez-vous pour recevoir les dernières alertes info.</p>
+            <form action="{% url 'subscribe_newsletter' %}" method="post" style="display: flex; gap: 10px;">
+                {% csrf_token %}
+                <input type="email" name="email" placeholder="Votre adresse email" required style="flex: 1; padding: 8px 12px; border: 1px solid #333; background: transparent; color: inherit; border-radius: 4px; font-size: 0.85rem;">
+                <button type="submit" style="background-color: var(--monde-red); color: white; border: none; padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 0.85rem;">S'inscrire</button>
+            </form>
+        </div>
+        <div style="grid-column: span 1;">
+            <h4 style="text-transform:uppercase; font-size:0.8rem; border-bottom:1px solid #333; padding-bottom:10px;">Contact</h4>
+            <a href="#" style="color:#aaa; text-decoration:none; display:block; margin-bottom:8px; font-size:0.85rem;">Publicité</a>
+            <a href="#" style="color:#aaa; text-decoration:none; display:block; margin-bottom:8px; font-size:0.85rem;">Mentions légales</a>
+        </div>
     </div>
     <div style="margin-top:50px; opacity:0.4; font-size:0.7rem; border-top:1px solid #222; padding-top:20px;">
-        © 2026 IsmaNews Media Group — Powered by Isma AI Engine
+        © 2026 Alkamaria Global News — Powered by Ismael & Faiza
     </div>
 </footer>
 
@@ -139,6 +230,186 @@
     window.onload = () => {
         const isDark = document.body.classList.contains('dark-mode');
         document.getElementById('darkIcon').innerText = isDark ? '☀️' : '🌙';
+    }
+</script>
+
+<!-- BANDEAU COOKIES -->
+<div id="cookieBanner" class="cookie-banner">
+    <div class="cookie-content">
+        <div class="cookie-text">
+            <h4>Respect de votre vie privée</h4>
+            <p>Alkamaria Global News et ses partenaires utilisent des cookies pour améliorer votre expérience, sécuriser votre navigation et mesurer l'audience. Vous pouvez personnaliser vos choix ci-dessous.</p>
+        </div>
+        <div class="cookie-buttons">
+            <button class="btn-cookie btn-cookie-refuse" onclick="handleCookieChoice('refused')">Tout Refuser</button>
+            <button class="btn-cookie btn-cookie-accept" onclick="handleCookieChoice('accepted')">Accepter & Continuer</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // LOGIQUE DU BANDEAU COOKIES
+    document.addEventListener("DOMContentLoaded", function() {
+        const cookieChoice = localStorage.getItem('alkamaria_cookie_consent');
+        
+        // Si l'utilisateur n'a jamais fait de choix
+        if (!cookieChoice) {
+            // Afficher le bandeau avec un léger délai pour l'animation
+            setTimeout(() => {
+                document.getElementById('cookieBanner').classList.add('show');
+            }, 800);
+        }
+    });
+
+    function handleCookieChoice(choice) {
+        // Enregistrer le choix dans le stockage local (valable indéfiniment sur ce navigateur)
+        localStorage.setItem('alkamaria_cookie_consent', choice);
+        
+        // Cacher le bandeau avec une animation
+        document.getElementById('cookieBanner').classList.remove('show');
+        
+        if(choice === 'accepted') {
+            console.log("Cookies acceptés : (Activation Analytics/Traqueurs)");
+            // Facultatif : Insérer ici Google Analytics ou autre script tiers
+        } else {
+            console.log("Cookies refusés : (Mode de navigation strict)");
+        }
+    }
+</script>
+
+
+<!-- POPUP NEWSLETTER (BBC STYLE) -->
+<div id="newsletterModal" class="news-modal-overlay">
+    <div class="news-modal">
+        <span class="news-modal-close" onclick="closeNewsletter(true)">&times;</span>
+        <div class="news-modal-image" style="background-image: url('https://images.unsplash.com/photo-1504711434969-e33886168f5c?q=80&w=1000&auto=format&fit=crop');"></div>
+        <div class="news-modal-body">
+            <h2>L'essentiel dans votre boîte mail</h2>
+            <p>Rejoignez 50 000 lecteurs et recevez chaque matin notre sélection d'actualités pilotée par l'IA.</p>
+            <form method="post" action="{% url 'subscribe_newsletter' %}" class="news-form" onsubmit="closeNewsletter(false)">
+                {% csrf_token %}
+                <input type="email" name="email" required placeholder="Votre adresse e-mail">
+                <button type="submit">S'abonner gratuitement</button>
+            </form>
+            <div style="margin-top: 15px;">
+                <button onclick="closeNewsletter(true)" style="background: none; border: none; color: #999; text-decoration: underline; font-size: 0.85rem; cursor: pointer;">Non merci, peut-être plus tard</button>
+            </div>
+            <small style="display: block; margin-top: 15px; font-size: 0.7rem; color: #999;">Vous pouvez vous désinscrire à tout moment.</small>
+        </div>
+    </div>
+</div>
+
+<script>
+    // LOGIQUE POPUP NEWSLETTER
+    document.addEventListener("DOMContentLoaded", function() {
+        const isSubscribedOrDismissed = localStorage.getItem('alkamaria_newsletter_choice');
+        
+        // On n'affiche que si l'utilisateur n'est pas déjà abonné ou n'a pas fermé la popup
+        if (!isSubscribedOrDismissed) {
+            // Délai de 8 secondes avant apparition (comme les vrais médias)
+            setTimeout(() => {
+                document.getElementById('newsletterModal').classList.add('show');
+            }, 8000);
+        }
+    });
+
+    function closeNewsletter(isDismissal) {
+        document.getElementById('newsletterModal').classList.remove('show');
+        
+        // Si c'est une fermeture manuelle (croix), on marque comme refusé pour 7 jours
+        if (isDismissal) {
+            localStorage.setItem('alkamaria_newsletter_choice', 'dismissed');
+        } else {
+            // Si c'est une soumission de formulaire, on marque comme "subscribed"
+            localStorage.setItem('alkamaria_newsletter_choice', 'subscribed');
+        }
+    }
+</script>
+
+<!-- SIDE DRAWER NAVIGATION (BBC STYLE) -->
+<div id="sideDrawerOverlay" class="side-drawer-overlay" onclick="toggleDrawer(false)"></div>
+<div id="sideDrawer" class="side-drawer">
+    <div class="drawer-header">
+        <h2>Menu Alkamaria</h2>
+        <span class="drawer-close" onclick="toggleDrawer(false)">&times;</span>
+    </div>
+    
+    <div class="drawer-content">
+        <!-- Search in Drawer for Mobile -->
+        <div class="drawer-search-box">
+            <form action="{% url 'search' %}" method="get">
+                <input type="text" name="q" placeholder="Recherche globale...">
+            </form>
+        </div>
+
+        <!-- Regional Editions -->
+        <div class="drawer-section">
+            <h3>Éditions Mondiales</h3>
+            <ul class="drawer-list">
+                <li><a href="/" class="{% if not active_edition %}active{% endif %}">Édition Internationale</a></li>
+                {% for n in newspapers %}
+                    <li>
+                        <a href="{% url 'newspaper_detail' n.slug %}" class="{% if active_edition.id == n.id %}active{% endif %}">
+                            Edition {{ n.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- All Categories -->
+        <div class="drawer-section">
+            <h3>Rubriques & Catégories</h3>
+            <ul class="drawer-list">
+                {% for cat in categories %}
+                    <li>
+                        {% if active_edition %}
+                            <a href="{% url 'category_in_edition' active_edition.slug cat.slug %}">{{ cat.name }}</a>
+                        {% else %}
+                            <a href="{% url 'category' cat.slug %}">{{ cat.name }}</a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- User Section -->
+        <div class="drawer-section" style="margin-top: 50px; border-top: 1px solid #eee; padding-top: 20px;">
+            {% if user.is_authenticated %}
+                <ul class="drawer-list">
+                    {% if user.is_staff %}
+                    <li><a href="{% url 'admin:index' %}" style="color: var(--monde-red); font-size: 0.9rem;">Accéder à l'administration</a></li>
+                    {% endif %}
+                    <li>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" style="background:none; border:none; padding:0; font:inherit; cursor:pointer; color:#888; font-size: 0.9rem;">Se déconnecter</button>
+                        </form>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="drawer-list">
+                    <li><a href="{% url 'login' %}">Se connecter</a></li>
+                    <li><a href="{% url 'signup' %}" style="color: var(--monde-red);">Créer un compte</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleDrawer(open) {
+        const drawer = document.getElementById('sideDrawer');
+        const overlay = document.getElementById('sideDrawerOverlay');
+        if (open) {
+            drawer.classList.add('active');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Empêche le scroll
+        } else {
+            drawer.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     }
 </script>
 

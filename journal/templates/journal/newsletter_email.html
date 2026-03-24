@@ -1,0 +1,23 @@
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-top: 5px solid #bc0000; border-radius: 8px;">
+    <h1 style="color: #bc0000; text-align: center; font-family: 'Playfair Display', serif;">IsmaNews</h1>
+    <p style="text-align: center; color: #666; font-style: italic; margin-top: -10px;">Votre résumé de l'actualité</p>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+    {% for article in articles %}
+    <div style="margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px dashed #f0f0f0;">
+        {% if article.image_url %}
+        <img src="{{ article.image_url }}" alt="Image" style="width: 100%; height: auto; border-radius: 5px; margin-bottom: 10px;">
+        {% endif %}
+        <h2 style="font-size: 18px; margin: 10px 0 5px 0;">
+            <a href="http://127.0.0.1:8000/article/{{ article.id }}/" style="color: #333; text-decoration: none;">{{ article.title }}</a>
+        </h2>
+        <p style="color: #666; font-size: 14px; margin: 5px 0 10px 0; line-height: 1.5;">{{ article.summary }}</p>
+        <a href="http://127.0.0.1:8000/article/{{ article.id }}/" style="color: #bc0000; font-size: 13px; font-weight: bold; text-decoration: none; padding: 5px 10px; border: 1px solid #bc0000; border-radius: 3px; display: inline-block;">Lire l'article &rarr;</a>
+    </div>
+    {% endfor %}
+
+    <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; text-align: center; margin-top: 30px; font-size: 12px; color: #888;">
+        <p>Cet email a été envoyé à <strong>{{ email }}</strong> parce que vous êtes abonné à IsmaNews.</p>
+        <a href="{{ unsubscribe_url }}" style="color: #999; text-decoration: underline;">Se désabonner de cette liste</a>
+    </div>
+</div>

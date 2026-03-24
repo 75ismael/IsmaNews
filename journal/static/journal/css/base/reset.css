@@ -21,7 +21,7 @@ body {
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     min-height: 100%;
-    overflow-x: hidden; /* Empêche le scroll horizontal parasite */
+    /* `overflow-x: hidden;` supprimé car il désactive `position: sticky` partout sur le site */
 }
 *, *::before, *::after {
     box-sizing: border-box;

@@ -12,3 +12,4 @@ staticfiles/
 .env
 .DS_Store
 
+docs/

@@ -6,12 +6,12 @@
     grid-template-columns: 8fr 4fr;
     gap: 40px;
     padding: 0 20px;
+    align-items: start; /* Évite que les items (et leurs bordures) s'étirent jusqu'au footer */
 }
 
-/* On ajoute le filet vertical sur la partie gauche (main) */
+/* On retire le filet vertical global qui descendait trop bas, mais on garde l'espace */
 .container main {
-    border-right: 1px solid var(--border-color); /* Utilise ta variable de bordure */
-    padding-right: 40px; /* Espace entre le texte et la ligne */
+    padding-right: 40px; /* On garde l'espace de 40px pour que le flux ne dépasse pas son cadre */
 }
 
 /* On retire la ligne sur mobile pour ne pas que ce soit moche */

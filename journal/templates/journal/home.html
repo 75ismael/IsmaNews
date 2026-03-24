@@ -4,96 +4,217 @@
 {% block content %}
     <div class="container">
         <main>
-            {% if ai_picks %}
-                <div class="ai-box">
-                    <div class="ai-title"><i class="fa-solid fa-brain"></i> Sélection IsmaNews AI</div>
-                    <div class="ai-grid">
-                        {% for pick in ai_picks %}
-                            <a href="{% url 'article' pick.id %}" style="text-decoration:none; color:inherit; display:flex; gap:12px;">
-                                <img src="{{ pick.image_url }}" style="width:60px; height:60px; border-radius:6px; object-fit:cover;">
-                                <div>
-                                    <h4 style="margin:0; font-size:0.85rem; line-height:1.2;">{{ pick.title|truncatechars:55 }}</h4>
-                                    <small style="color:var(--ai-text); font-size:0.65rem; font-weight:bold; text-transform:uppercase;">{{ pick.newspaper.name }}</small>
-                                </div>
-                            </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if headline %}
-                <article class="main-article" style="cursor:pointer;" onclick="location.href='{% url 'article' headline.id %}'">
-                    <span class="category-tag">{{ headline.newspaper.name }} | {{ headline.category.name }}</span>
-                    <h2 style="font-size: clamp(1.8rem, 5vw, 3rem); margin: 15px 0; font-family:'Playfair Display';">{{ headline.title }}</h2>
-                    {% if headline.image_url %}
-                        <img src="{{ headline.image_url }}" alt="Image de Une" style="width:100%; border-radius:8px;">
+    <!-- TOP STORIES GRID (BBC GENUINE LOOK - 3 COLUMNS) -->
+    <section class="bbc-top-grid">
+        <!-- Col 1: Secondary Highlights (Left) -->
+        <aside class="bbc-top-left-sidebar" style="padding-right: 20px;">
+            {% for s in top_secondary %}
+                <article class="bbc-lateral-article" style="margin-bottom: 30px; cursor: pointer;" onclick="window.location.href='{% url 'article' s.id %}';">
+                    {% if s.image_url %}
+                        <img src="{{ s.image_url }}" alt="{{ s.title }}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-bottom: 12px;">
                     {% endif %}
-                    <p style="font-size: 1.15rem; color: var(--monde-grey); line-height:1.6;">{{ headline.summary|truncatechars:280 }}</p>
+                    <h4 style="font-size: 1.1rem; font-family: 'Inter', sans-serif; font-weight: 850; line-height: 1.25; margin: 0;">
+                        {{ s.title }}
+                    </h4>
+                    <small style="color:var(--monde-grey); font-size: 0.7rem; margin-top: 8px; display: block;">Il y a {{ forloop.counter }} heures | {{ s.category.name }}</small>
                 </article>
-            {% endif %}
+            {% endfor %}
+        </aside>
 
-            <section id="location-section" style="margin-bottom: 40px;">
-                {% if local_edition %}
-                    <div class="edition-focus" style="margin-bottom: 20px;">
-                        <h3 class="sidebar-title">📍 Suggestion pour votre zone</h3>
-                        <div class="newspaper-card" onclick="location.href='{% url 'newspaper_detail' local_edition.slug %}'"
-                             style="display: flex; align-items: center; text-align: left; gap: 20px; border-left: 15px solid {{ local_edition.color_code }}; background: var(--sidebar-bg); padding: 30px;">
-                            <div style="flex-grow: 1;">
-                                <h2 style="margin:0; font-family:'Playfair Display';">{{ local_edition.name }}</h2>
-                                <p style="margin:10px 0; font-size:0.9rem;">{{ local_edition.description|truncatechars:120 }}</p>
-                                <span style="font-weight:bold; color:{{ local_edition.color_code }}; text-transform: uppercase; font-size: 0.8rem;">Accéder à l'édition locale →</span>
-                            </div>
-                        </div>
+        <!-- Col 2: Main Story (Headline - Center) -->
+        {% if headline %}
+            <article class="bbc-main-hero" onclick="window.location.href='{% url 'article' headline.id %}';" style="padding: 0 15px;">
+                {% if headline.image_url %}
+                    <div class="bbc-main-image" style="margin-bottom: 25px;">
+                        <img src="{{ headline.image_url }}" alt="{{ headline.title }}" style="width: 100%; display: block;">
                     </div>
                 {% endif %}
-
-                <div style="background: var(--bg-color); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-                    <label style="font-size: 0.7rem; font-weight: bold; text-transform: uppercase; color: var(--monde-grey);">Changer de région :</label>
-                    <div style="display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;">
-                        {% for j in other_editions %}
-                            <a href="?country={{ j.target_country }}" style="text-decoration:none; white-space:nowrap; padding: 5px 15px; border-radius: 20px; border: 1px solid {{ j.color_code }}; color: var(--text-color); font-size: 0.8rem; font-weight: bold;">
-                                {{ j.name }}
-                            </a>
-                        {% endfor %}
-                    </div>
+                <div class="bbc-main-content">
+                    <h2 class="bbc-headline" style="font-size: 2.3rem; line-height: 1.1; margin-bottom: 15px; font-weight: 900; letter-spacing: -0.5px;">
+                        <span style="color: var(--monde-red); vertical-align: middle; margin-right: 5px; font-size: 1.5rem;">◉</span>
+                        <span style="color: var(--monde-red); font-weight: 950; text-transform: uppercase;">EN DIRECT</span> 
+                        {{ headline.title }}
+                    </h2>
+                    <p class="bbc-summary" style="margin-top: 15px; font-size: 1.05rem; color: #333; line-height: 1.5;">{{ headline.summary|truncatechars:250 }}</p>
+                    
+                    <ul class="bbc-bullets" style="list-style: none; margin: 30px 0; padding: 0;">
+                        <li style="position: relative; padding-left: 20px; margin-bottom: 15px; font-weight: 700; font-size: 0.95rem; color: #000; line-height: 1.3;">
+                            <span style="position:absolute; left:0; color:#333; font-size: 0.8rem;">●</span> {{ headline.category.name }} : Les négociations en cours analysées
+                        </li>
+                        <li style="position: relative; padding-left: 20px; margin-bottom: 15px; font-weight: 700; font-size: 0.95rem; color: #000; line-height: 1.3;">
+                            <span style="position:absolute; left:0; color:#333; font-size: 0.8rem;">●</span> Déclarations exclusives de notre correspondant
+                        </li>
+                    </ul>
                 </div>
-            </section>
+            </article>
+        {% endif %}
 
-            <h3 class="sidebar-title">Flux d'actualité</h3>
-            {% for a in latest %}
-                <article class="secondary-article">
-                    {% if a.image_url %}
-                        <img src="{{ a.image_url }}" alt="Miniature">
-                    {% endif %}
-                    <div>
-                        <span class="category-tag" style="color:{{ a.newspaper.color_code }}">{{ a.newspaper.name }}</span>
-                        <h3 style="margin:5px 0; font-size:1.3rem; font-family:'Playfair Display';"><a href="{% url 'article' a.id %}" style="text-decoration:none; color:inherit;">{{ a.title }}</a></h3>
-                        <p style="font-size:0.95rem; color:var(--monde-grey); line-height:1.4;">{{ a.summary|truncatechars:150 }}</p>
-                    </div>
-                </article>
-            {% endfor %}
-        </main>
-
-        <aside>
-            <h3 class="sidebar-title">🔥 Tendances</h3>
-            {% for p in popular %}
-                <div style="display:flex; gap:15px; margin-bottom:25px; align-items:flex-start;">
-                    <span class="popular-num">{{ forloop.counter }}</span>
-                    <div>
-                        <a href="{% url 'article' p.id %}" style="text-decoration:none; color:inherit; font-weight:700; font-size:0.95rem; display:block; margin-bottom:5px;">{{ p.title }}</a>
-                        <small style="color:var(--monde-red); font-weight:bold; font-size:0.7rem; text-transform:uppercase;">{{ p.views }} vues</small>
-                    </div>
+        <!-- Col 3: Sidebar Live (En direct - Right) -->
+        <aside class="bbc-top-right-sidebar" style="border-left: 1px solid var(--border-color); padding-left: 15px;">
+            <div class="bbc-section-header" style="margin-top: 0; border: none; padding-top: 0; margin-bottom: 15px;">
+                <h3 style="font-size: 0.85rem; color: var(--monde-red); text-transform: uppercase; font-weight: 900;">◉ EN DIRECT</h3>
+            </div>
+            {% for b in breaking|slice:":6" %}
+                <div class="bbc-breaking-item" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                    <h4 style="font-size: 1rem; font-family: 'Inter', sans-serif; font-weight: 850; margin-top: 5px; line-height: 1.25;">
+                        <a href="{% url 'article' b.id %}" style="text-decoration:none; color:inherit;">{{ b.title }}</a>
+                    </h4>
+                    <small style="color:var(--monde-grey); font-size: 0.6rem; margin-top: 8px; display: block; text-transform: uppercase;">Il y a 12 min</small>
                 </div>
             {% endfor %}
+        </aside>
 
-            <div style="position: sticky; top: 120px;">
-                <div style="background:var(--sidebar-bg); padding:25px; border-radius:12px; border:1px solid var(--border-color); text-align:center;">
-                    <h4 style="margin:0 0 10px 0; font-size:0.8rem; text-transform:uppercase; font-family:'Libre Franklin';">Newsletter Alkamaria</h4>
-                    <p style="font-size:0.8rem; color:var(--monde-grey);">Recevez le meilleur de l'IA chaque matin.</p>
-                    <input type="email" placeholder="Votre email" style="width:100%; padding:8px; margin-bottom:10px; border-radius:4px; border:1px solid var(--border-color); background:var(--bg-color); color:var(--text-color);">
-                    <button style="width:100%; padding:10px; background:var(--monde-red); color:white; border:none; border-radius:4px; font-weight:bold; cursor:pointer;">S'ABONNER</button>
+        <!-- Col 4: Sidebar Popular (Tendances - Rightmost) -->
+        <aside class="bbc-top-far-right-sidebar" style="border-left: 1px solid var(--border-color); padding-left: 15px;">
+            <div class="bbc-section-header" style="margin-top: 0; border: none; padding-top: 0; margin-bottom: 15px;">
+                <h3 style="font-size: 0.85rem; color: #000; text-transform: uppercase; font-weight: 950;">🔥 TENDANCES</h3>
+            </div>
+            <div class="bbc-trending-list">
+                {% for p in popular %}
+                    <div class="bbc-trending-item" style="display: flex; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 12px;">
+                        <span class="bbc-trending-num" style="font-size: 1.6rem; font-weight: 950; color: #eee; min-width: 25px;">{{ forloop.counter }}</span>
+                        <div class="bbc-trending-content">
+                            <a href="{% url 'article' p.id %}" style="text-decoration:none; color:inherit; font-weight:800; font-size: 0.9rem; line-height: 1.25;">{{ p.title }}</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div style="margin-top: 25px;">
+                <h3 style="font-size: 0.7rem; text-transform: uppercase; font-weight: 950; margin-bottom: 10px; color: #888;">EXPLORER</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    {% for cat in all_categories|slice:":6" %}
+                         <a href="{% url 'category' cat.slug %}" class="bbc-tag" style="background: #fdfdfd; padding: 4px 8px; border: 1px solid #eee; text-transform: capitalize; font-size: 0.6rem;">{{ cat.name }}</a>
+                    {% endfor %}
                 </div>
             </div>
         </aside>
+    </section>
+    </main>
+    </div> <!-- Fin du Container du Haut (4 colonnes) -->
+
+    <!-- PROMOTED EDITION CARD (DANS SON PROPRE CONTAINER PLEINE LARGEUR) -->
+    {% if local_edition %}
+    <div class="container" style="margin-top: 20px; margin-bottom: 20px; display: block;">
+        <div class="newspaper-card-dynamic" onclick="location.href='{% url 'newspaper_detail' local_edition.slug %}'"
+             style="--card-color: {{ local_edition.color_code|default:'#bc0000' }}; cursor: pointer;">
+            <div style="flex-grow: 1;">
+                <h2>{{ local_edition.name }}</h2>
+                <p>{{ local_edition.description|truncatechars:120 }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SÉLECTION DE LA RÉDACTION (CONTAINER PLEINE LARGEUR) -->
+    {% if ai_picks %}
+    <div class="container" style="display: block;">
+        <div class="bbc-section-header" style="border-top: 2px solid #000; padding-top: 15px; margin-top: 40px; margin-bottom: 25px;">
+            <h3 style="font-size: 1.3rem; font-weight: 900; text-transform: uppercase;">
+                Le Choix d'Alkamaria : {{ featured_category.name|default:"L'Essentiel" }} <span style="color: #666; margin-left: 10px;">›</span>
+            </h3>
+        </div>
+        <section class="bbc-topic-grid">
+            {% for pick in ai_picks %}
+                <article class="bbc-topic-article" style="cursor: pointer;" onclick="location.href='{% url 'article' pick.id %}';">
+                    {% if pick.image_url %}
+                        <img src="{{ pick.image_url }}" alt="{{ pick.title }}" style="width: 100%; aspect-ratio: 16/9; object-fit: cover; margin-bottom: 12px;">
+                    {% endif %}
+                    <h3 style="font-size: 1.25rem; font-weight: 900; line-height: 1.2; margin-bottom: 10px;">{{ pick.title }}</h3>
+                    <p style="font-size: 0.95rem; color: #444; line-height: 1.4;">{{ pick.summary|truncatechars:120 }}</p>
+                </article>
+            {% endfor %}
+        </section>
+    </div>
+    {% endif %}
+
+    <!-- FLUX D'ACTUALITÉ (CONTAINER PLEINE LARGEUR) -->
+    <div class="container" style="display: block;">
+        <div class="bbc-section-header" style="border-top: 2px solid #000; padding-top: 15px; margin-top: 40px; margin-bottom: 25px;">
+            <h3 style="font-size: 1.3rem; font-weight: 900; text-transform: uppercase;">Flux d'actualité <span style="color: #666; margin-left: 10px;">›</span></h3>
+        </div>
+        <div class="bbc-latest-grid">
+            {% for a in latest %}
+                <article class="bbc-secondary-article">
+                    {% if a.image_url %}
+                        <div class="bbc-img-wrapper">
+                            <img src="{{ a.image_url }}" alt="Miniature">
+                        </div>
+                    {% endif %}
+                    <div class="bbc-article-info">
+                        <h3><a href="{% url 'article' a.id %}">{{ a.title }}</a></h3>
+                        <p>{{ a.summary|truncatechars:100 }}</p>
+                        <span class="bbc-tag" style="color:{{ a.newspaper.color_code }}">{{ a.newspaper.name }}</span>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- SECTION THÉMATIQUE (Ruban BBC : In Depth / Features) -->
+    {% if featured_category and featured_articles %}
+    <div class="bbc-thematic-ribbon" style="background-color: var(--sidebar-bg); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 50px 0; margin-top: 50px;">
+        <div class="container" style="margin-top: 0; margin-bottom: 0; display: block;">
+            <h3 class="bbc-section-title" style="margin-bottom: 30px; font-size: 1.5rem; text-transform: uppercase;">Rubrique : {{ featured_category.name }}</h3>
+            <div class="bbc-latest-grid" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); margin-bottom: 0;">
+                {% for f_art in featured_articles %}
+                    <article class="bbc-secondary-article">
+                        {% if f_art.image_url %}
+                            <div class="bbc-img-wrapper" style="margin-bottom: 12px;">
+                                <img src="{{ f_art.image_url }}" alt="Image" style="aspect-ratio: 16/9; object-fit: cover; width: 100%;">
+                            </div>
+                        {% endif %}
+                        <div class="bbc-article-info">
+                            <h3 style="font-size: 1.15rem; margin-bottom: 8px;"><a href="{% url 'article' f_art.id %}">{{ f_art.title }}</a></h3>
+                            <span class="bbc-tag" style="color:var(--monde-red);">{{ f_art.newspaper.name }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- SECTION AUDIO RECOMMANDÉ (BBC Style Carousel) -->
+    <div style="border-top: 2px solid #000; padding-top: 40px; margin-top: 60px; margin-bottom: 40px;">
+        <div class="container" style="display: block;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h3 style="font-size: 1.3rem; font-weight: 900; text-transform: uppercase;">Audio Recommandé <span style="color: #666; margin-left: 10px;">›</span></h3>
+                <div style="display: flex; gap: 10px;">
+                    <button style="border: 1px solid var(--border-color); background: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">‹</button>
+                    <button style="border: 1px solid var(--border-color); background: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;">›</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 20px; overflow-x: auto; padding-bottom: 25px; scrollbar-width: none; -ms-overflow-style: none;">
+                <style>
+                    div::-webkit-scrollbar { display: none; }
+                </style>
+                {% for audio in recommended_audios %}
+                <div style="min-width: 160px; text-align: left; cursor: pointer; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="location.href='{% url 'article' audio.id %}'">
+                    <div style="position: relative; width: 100%; aspect-ratio: 1/1; margin-bottom: 12px; border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                        {% if audio.image_url %}
+                            <img src="{{ audio.image_url }}" alt="{{ audio.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5, #e0e0e0);">
+                                <i class="fa fa-headphones" style="font-size: 2.5rem; color: #ccc;"></i>
+                            </div>
+                        {% endif %}
+                        <div style="position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+                            <i class="fa fa-play" style="font-size: 0.8rem; margin-left: 2px;"></i>
+                        </div>
+                    </div>
+                    <h5 style="font-size: 0.95rem; font-weight: 850; line-height: 1.25; margin-bottom: 5px; font-family: 'Inter', sans-serif;">{{ audio.title }}</h5>
+                    <div style="display: flex; align-items: center; gap: 5px; color: #777;">
+                        <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase;">{{ audio.audio_duration|default:"10 min" }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="padding: 40px; text-align: center; width: 100%; color: #888;">
+                    <p>Aucun audio recommandé pour cette édition pour le moment.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 {% endblock %}

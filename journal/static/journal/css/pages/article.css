@@ -57,12 +57,12 @@
 }
 
 .article-header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem; /* Très grand pour l'impact */
+    font-family: 'Reith Sans', Helvetica, Arial, sans-serif; /* Style BBC News */
+    font-size: 2.5rem; /* Grand mais très fonctionnel (pas gigantesque) */
     line-height: 1.1;
     margin: 15px 0;
     color: var(--text-color);
-    font-weight: 900;
+    font-weight: 700;
 }
 
 .meta-info {
@@ -71,31 +71,27 @@
     color: var(--monde-grey);
 }
 
-/* --- 4. CORPS DE L'ARTICLE (LE PLUS IMPORTANT) --- */
+/* --- 4. CORPS DE L'ARTICLE (STYLE BBC NEWS) --- */
 .article-body {
-    font-family: 'PT Serif', serif; /* Serif pour la lecture longue */
-    font-size: 1.25rem; /* Taille confortable */
-    line-height: 1.8; /* Espacement aéré pour éviter la fatigue visuelle */
+    font-family: 'Reith Sans', Helvetica, Arial, sans-serif; /* Style très net et moderne */
+    font-size: 1.1rem; /* Moins énorme que la V1 */
+    line-height: 1.6; /* Aéré mais standard */
     color: var(--text-color);
-    text-align: justify; /* Look journal papier */
-    hyphens: auto;
+    text-align: left; /* Jamais justifié, toujours aligné à gauche sur le web */
 }
 
-/* Lettrine (La première lettre du premier paragraphe est plus grande) */
-.article-body p:first-of-type::first-letter {
-    float: left;
-    font-size: 4.5rem;
-    line-height: 1;
-    padding-top: 4px;
-    padding-right: 12px;
-    font-family: 'Playfair Display', serif;
-    font-weight: 900;
+/* La BBC met le premier paragraphe en valeur (Standfirst) */
+.article-body p:first-of-type {
+    font-family: 'Reith Serif', 'PT Serif', serif; /* Parfois le standfirst est serif */
+    font-weight: bold;
+    font-size: 1.25rem;
     color: var(--text-color);
+    margin-bottom: 30px;
 }
 
 /* Gestion des espacements entre paragraphes */
 .article-body p {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 /* --- 5. RESPONSIVE --- */

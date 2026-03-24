@@ -14,9 +14,79 @@
         </header>
 
         <div class="article-body">
+            {% if article.is_audio_news and article.audio_url %}
+            <!-- ALKAMARIA AUDIO PLAYER (BBC STYLE) -->
+            <div class="audio-player-container" style="background: #f8f8f8; border-left: 4px solid var(--monde-red); padding: 25px; margin-bottom: 40px; border-radius: 0 8px 8px 0; display: flex; align-items: center; gap: 20px;">
+                <div style="background: var(--monde-red); color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(188, 0, 0, 0.2);">
+                    <i class="fa fa-microphone"></i>
+                </div>
+                <div style="flex-grow: 1;">
+                    <h4 style="margin: 0 0 10px; font-size: 1.1rem; font-weight: 800; font-family: 'Inter', sans-serif;">Écouter cet article ({{ article.audio_duration|default:"Podcast" }})</h4>
+                    <audio controls style="width: 100%; height: 35px; outline: none;">
+                        <source src="{{ article.audio_url }}" type="audio/mpeg">
+                        Votre navigateur ne supporte pas l'élément audio.
+                    </audio>
+                </div>
+            </div>
+            {% endif %}
+
             {{ article.content|linebreaks }}
         </div>
 
+        <!-- RELATED ARTICLES (Vrai système BBC) -->
+        <section class="related-articles" style="margin-top: 50px;">
+            <h3 class="bbc-section-title">À lire aussi</h3>
+            <div class="bbc-latest-grid" style="grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; margin-bottom: 0;">
+                {% for rel in related_articles %}
+                    <article class="bbc-secondary-article">
+                        {% if rel.image_url %}
+                            <div class="bbc-img-wrapper" style="margin-bottom: 8px;">
+                                <img src="{{ rel.image_url }}" alt="Miniature" style="border-radius: 0;">
+                            </div>
+                        {% endif %}
+                        <div class="bbc-article-info">
+                            <h3 style="font-size: 1rem;"><a href="{% url 'article' rel.id %}">{{ rel.title }}</a></h3>
+                            <span class="bbc-tag" style="color:var(--monde-red); font-size: 0.7rem;">{{ rel.category.name }}</span>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid var(--border-color);">
+
+        <section class="comments-section" style="margin-top: 30px;">
+            <h3 style="font-family: 'Playfair Display'; margin-bottom: 20px;">Commentaires ({{ comments.count }})</h3>
+            
+            {% if user.is_authenticated %}
+                <div class="comment-form-container" style="margin-bottom: 30px; background: rgba(0,0,0,0.02); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <form method="post" action="{% url 'article' article.id %}">
+                        {% csrf_token %}
+                        <textarea name="text" rows="4" placeholder="Rejoignez la discussion..." required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; color: var(--text-color); font-family: 'Libre Franklin'; margin-bottom: 10px; resize: vertical;"></textarea>
+                        <button type="submit" style="background-color: var(--monde-red); color: white; border: none; padding: 10px 20px; font-weight: bold; border-radius: 4px; cursor: pointer;">Publier le commentaire</button>
+                    </form>
+                </div>
+            {% else %}
+                <div style="margin-bottom: 30px; padding: 15px; background: rgba(0,0,0,0.02); border: 1px solid var(--border-color); border-radius: 8px; text-align: center;">
+                    <p style="margin-bottom: 10px;">Vous devez être connecté pour participer à la discussion.</p>
+                    <a href="{% url 'login' %}?next={{ request.path }}" style="display: inline-block; background-color: var(--monde-red); color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">Se connecter</a>
+                </div>
+            {% endif %}
+
+            <div class="comments-list" style="display: flex; flex-direction: column; gap: 20px;">
+                {% for comment in comments %}
+                    <div class="comment-item" style="border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong style="color: var(--monde-red); font-size: 0.95rem;">{{ comment.user.username }}</strong>
+                            <span style="font-size: 0.8rem; opacity: 0.6;">{{ comment.date|date:"d M Y à H:i" }}</span>
+                        </div>
+                        <p style="margin: 0; font-size: 0.95rem; line-height: 1.5;">{{ comment.text|linebreaksbr }}</p>
+                    </div>
+                {% empty %}
+                    <p style="opacity: 0.6; font-style: italic;">Aucun commentaire pour le moment. Soyez le premier à donner votre avis !</p>
+                {% endfor %}
+            </div>
+        </section>
 
     </div>
 

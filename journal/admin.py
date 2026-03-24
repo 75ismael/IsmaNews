@@ -1,8 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
+
+
+
 from .models import (
-    Category, Article, AuthorProfile, EditorProfile, 
-    Comment, View, Subscription, Approval, Tag, Trending,Newspaper
+    Category, Article, AuthorProfile, EditorProfile,
+    Comment, View, Subscription, Approval, Tag, Trending,Newspaper, Subscriber
 )
 
 
@@ -11,8 +14,6 @@ class NewspaperAdmin(admin.ModelAdmin):
     # 1. On affiche plus d'infos dans la liste
     list_display = ('name', 'target_country', 'slug', 'color_preview', 'article_count')
 
-
-    
     # 2. On ajoute des filtres qui font apparaître la barre à droite
     # Note: Filtrer par 'name' est peu utile, filtrer par date est mieux
     list_filter = ('target_country',)
@@ -116,9 +117,10 @@ admin.site.register(Tag)
 admin.site.register(EditorProfile)
 admin.site.register(Comment)
 admin.site.register(Subscription)
+admin.site.register(Subscriber)
 admin.site.register(Approval)
 
-# Personnalisation visuelle globale
+
 admin.site.site_header = "ISMANEWS MANAGEMENT"
-admin.site.site_title = "Admin IsmaNews"
+admin.site.site_title = "Admin Alkamaria Global News"
 admin.site.index_title = "Gestion des Opérations Média"

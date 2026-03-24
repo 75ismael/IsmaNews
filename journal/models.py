@@ -1,14 +1,25 @@
 from django.db import models
+from django.utils.crypto import get_random_string
 from django.utils.text import slugify
 from django.contrib.auth.models import User
-
+# classe Newspaper ( Edition ou Journal )
 class Newspaper(models.Model):
     name = models.CharField(max_length=100) # ex: IsmaNews Afrique
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
     logo_url = models.URLField(max_length=500, blank=True, null=True)
     color_code = models.CharField(max_length=7, default="#bc0000") # Pour le design du journal
-    target_country = models.CharField(max_length=10, choices=[('KM', 'Comores'), ('FR', 'France'), ('AF', 'Afrique'), ('INT', 'International')], default='INT')
+    # Le filtre géographique.
+    target_country = models.CharField(max_length=10, choices=[
+        ('KM', 'Comores'), 
+        ('FR', 'France'), 
+        ('AF', 'Afrique'), 
+        ('MO', 'Moyen-Orient'), 
+        ('EUR', 'Europe'), 
+        ('AS', 'Asie'), 
+        ('AM', 'Amériques'),
+        ('INT', 'International')
+    ], default='INT')
 
     class Meta:
         verbose_name = "Journal"
@@ -57,6 +68,9 @@ class Article(models.Model):
     is_breaking_news = models.BooleanField(default=False) # Pour le bandeau rouge clignotant
     is_ai_selection = models.BooleanField(default=False)  # Pour le bloc "Sélection IA"
     is_headline = models.BooleanField(default=False)      # Pour la grande "Une"
+    is_audio_news = models.BooleanField(default=False)    # Pour la section Audio/Podcast
+    audio_duration = models.CharField(max_length=50, blank=True, null=True, help_text="Ex: 14 min écoute")
+    audio_url = models.URLField(max_length=500, blank=True, null=True, help_text="Lien vers le fichier MP3 ou le flux audio")
     
     source = models.CharField(max_length=200, blank=True, null=True)
     source_url = models.URLField(max_length=500, blank=True, null=True)
@@ -174,7 +188,7 @@ class Comment(models.Model):
     text = models.TextField()
     date = models.DateTimeField(auto_now_add=True)
     def __str__(self):
-        return self.user
+        return self.user.username
 
 class Like(models.Model):
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
@@ -225,3 +239,25 @@ class TrafficStats(models.Model):
 class Revenue(models.Model):
     date = models.DateField()
     amount = models.FloatField()
+
+# =====================================================
+# 5️⃣ NEWSLETTER
+# =====================================================
+
+class Subscriber(models.Model):
+    email = models.EmailField(unique=True)
+    is_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=64, blank=True)
+    unsubscribe_token = models.CharField(max_length=64, blank=True)
+    wants_daily = models.BooleanField(default=True)
+    date_subscribed = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.verification_token:
+            self.verification_token = get_random_string(64)
+        if not self.unsubscribe_token:
+            self.unsubscribe_token = get_random_string(64)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.email

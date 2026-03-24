@@ -13,17 +13,12 @@ logger = logging.getLogger("IsmaNews")
 
 def setup_django():
     """Configures the Python path and Django environment."""
-    # 1. Add parent directory to path
+    
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
     sys.path.append(base_dir)
 
-    # 2. Set settings module
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ismanews.settings')
-
-    # 3. Load environment variables
     load_dotenv(os.path.join(base_dir, '.env'))
-
-    # 4. Initialize Django
     try:
         django.setup()
         logger.info("Django initialized successfully.")
@@ -35,7 +30,6 @@ def main():
     """Main execution flow."""
     setup_django()
 
-    # Import scripts AFTER django.setup()
     try:
         from news_fetcher import fetch_news
         from ai import process_news_cycle

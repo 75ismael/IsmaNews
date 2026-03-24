@@ -13,6 +13,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.contrib.auth.models import User
+from dotenv import load_dotenv
+from journal.models import Article, Category, AuthorProfile
+from journal.services.social_utils import post_to_facebook, send_report_email
+
 load_dotenv()
 logger = logging.getLogger(__name__)
 
@@ -68,18 +72,18 @@ def generate_article_content(article_data: Dict) -> str:
         return "Erreur lors de la génération de l'article."
 
 def detect_category(text: str) -> str:
-    """Classifies an article into a category."""
+    """Classifies an article strictly into a thematic category."""
     if not client:
-        return "International"
+        return "Général"
 
-    prompt = f"Donne uniquement un mot de catégorie (France, Iran, USA, Afrique, International) pour ce texte : {text[:200]}"
+    prompt = f"Donne UNIQUEMENT LE MOT précis de la thématique (choisis parmi: Politique, Sport, Économie, Tech, Culture, Santé, Société, Guerre). Interdiction formelle d'ajouter une phrase, une explication ou un pays. Résultat attendu : 1 seul mot. Texte : {text[:300]}"
     try:
         completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": prompt}],
             temperature=0
         )
-        return completion.choices[0].message.content.strip().replace(".", "")
+        return completion.choices[0].message.content.strip().replace(".", "").replace('"', '').capitalize()
     except Exception as e:
         logger.error(f"Error detecting category: {e}")
         return "International"
@@ -194,6 +198,20 @@ def process_news_cycle(news_list: List[Dict]):
             cat_name = detect_category(content)
             cat, _ = Category.objects.get_or_create(name=cat_name, defaults={'slug': slugify(cat_name)})
 
+            # 1. Décortique l'origine purement géographique ajoutée par news_fetcher
+            geo_query = item.get('_geo_query', '')
+            target_country = 'INT'
+            if geo_query == 'France': target_country = 'FR'
+            elif geo_query == 'Comores': target_country = 'KM'
+            elif 'Afrique' in geo_query: target_country = 'AF'
+            elif 'Moyen-Orient' in geo_query: target_country = 'MO'
+            elif geo_query == 'USA': target_country = 'AM'
+            elif 'Sport' in geo_query: target_country = 'INT' # Sports mondialisés par défaut
+            
+            # 2. Raccroche l'article au vrai journal (Édition)
+            from journal.models import Newspaper
+            newspaper_obj = Newspaper.objects.filter(target_country=target_country).first()
+
             article = Article.objects.create(
                 title=item.get('title', 'Sans titre'),
                 summary=content[:300] + "...",
@@ -202,6 +220,7 @@ def process_news_cycle(news_list: List[Dict]):
                 source=item.get('source', {}).get('name', 'Inconnue'),
                 source_url=source_url,
                 category=cat,
+                newspaper=newspaper_obj,  # <--- Ajout Crucial pour le routage de BBC !
                 author=editor_profile,
                 status="published",
                 published_at=timezone.now()
