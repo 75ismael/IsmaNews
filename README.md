@@ -1,82 +1,61 @@
-# IsmaNews 📰
+# Alkamaria Global News 📰
 
-**IsmaNews** est un journal numérique innovant et entièrement automatisé. Propulsé par l'intelligence artificielle, il capture l'actualité mondiale en temps réel, rédige des articles complets et les publie de manière autonome.
+**Alkamaria Global News** est un portail multimédia d'actualités multi-régional, intelligent et automatisé. Inspiré par les designs premium de **BBC News**, il propose une expérience d'information dense, dynamique et personnalisée selon la région du lecteur.
 
-Ce projet a été conçu pour démontrer l'intégration de flux de données externes avec des modèles de langage avancés (LLM) au sein d'une architecture de gestion de contenu robuste.
+Ce projet démontre la puissance de l'intégration entre un framework web robuste (**Django**) et des modèles de langage avancés (**Llama 3 via Groq**) pour créer un média autonome et scalable.
 
 ---
 
-## 🚀 Fonctionnalités Clés
+## 🚀 Fonctionnalités Clés (Version "Complet")
 
-- **Extraction Intelligente** : Récupération automatisée des actualités (ciblant la France, Iran, etc.) via *NewsAPI*.
-- **Rédaction par IA** : Utilisation de **Groq / Llama 3** pour transformer des dépêches brutes en articles structurés et engageants, ainsi que génération de miniatures.
-- **Publication Multi-Canale** : Auto-publication sur Facebook via l'API Graph (`social_utils.py`).
-- **Gestion CRM Lecteurs** : Abonnement Newsletter avec respect du RGPD (*Double Opt-In*) et désabonnement en 1-clic.
-- **Automatisation Totale** : Le CMS s'alimente et envoie ses courriels tout seul grâce aux requêtes planifiées (`cron`).
-- **Comptes Utilisateurs** : Système d'authentification robuste avec designs premium.
+- **Dashbord BBC-Style** : Une architecture de grille à 4 colonnes optimisée pour la densité d'information (Hero, Highlights, Live Flow, Popular).
+- **Navigation Multi-Régionale** : Un menu latéral (**Side-Drawer**) dynamique permettant de basculer instantanément entre les éditions (France, Afrique, International, etc.).
+- **Moteur Audio & Podcast** : Système de recommandation audio intelligent qui propose des podcasts adaptés à la région du lecteur avec un lecteur multimédia intégré.
+- **Rédaction par IA Autonome** : Utilisation de **Groq / Llama 3** pour transformer des dépêches brutes en articles journalistiques structurés avec analyse et catégorisation.
+- **CRM & Newsletter** : Système d'abonnement *Double Opt-In* (RGPD compliant) avec envoi automatisé de "La Matinale" en HTML riche.
+- **Publication Sociale** : Auto-postage sur les réseaux sociaux (Facebook Graph API) pour maximiser la portée.
 
 ---
 
 ## 🛠️ Architecture Technique
 
-Le projet repose sur un circuit fermé d'automatisation :
+Le projet repose sur une orchestration de services spécialisés :
 
-1.  **NewsAPI** : Source de données pour les actualités mondiales.
-2.  **Groq (Llama 3)** : Moteur d'intelligence artificielle pour la rédaction et la catégorisation.
-3.  **Django** : Framework web pour le stockage, l'administration et le rendu.
-4.  **Django-Crontab** : Planificateur de tâches pour l'orchestration du backend.
-
----
-
-## 📂 Structure du Projet
-
-- `journal/` : Application principale contenant la logique métier.
-    - `models.py` : Structure de la base de données (Articles, Catégories, etc.).
-    - `news_fetcher.py` : Script de récupération des news.
-    - `ai.py` : Intégration avec Groq/Llama 3.
-    - `cron.py` : Orchestrateur des tâches automatiques.
-- `ismanews/` : Configuration globale du projet Django.
-- `static/` : Ressources statiques (images, CSS).
-- `manage.py` : Point d'entrée pour les commandes de gestion Django.
+1.  **Backend** : Django 6.0 (Stabilité et sécurité).
+2.  **Intelligence Artificielle** : Groq API (Inférence ultra-rapide) pour la génération de contenu.
+3.  **Frontend** : Vanilla CSS & JS (Sans frameworks lourds pour une performance maximale et un contrôle total du design).
+4.  **Automatisation** : Cron Jobs pour les cycles de news et l'envoi des newsletters.
 
 ---
 
-## ⚙️ Installation et Configuration
+## 📂 Documentation de Référence
 
-### Prérequis
-- Python 3.x
-- Clé API NewsAPI
-- Clé API Groq
+Pour une compréhension approfondie du projet (idéal pour un jury), consultez le dossier `docs/` :
 
-### Installation
-1.  **Cloner le dépôt** :
+- [🚀 Guide de Présentation (Anti-sèche)](docs/JURY_PRESENTATION_GUIDE.md) : Scénario de démo et questions techniques.
+- [💎 Concept du Routage Dynamique](docs/CONCEPT_CLE_ROUTAGE_DYNAMIQUE.md) : Comment le site gère plusieurs pays avec un seul code.
+- [🏗️ Architecture Globale](docs/ARCHITECTURE.md) : Anatomie complète des services.
+- [⚙️ Aide-Mémoire des Commandes](docs/COMMANDS.md) : Toutes les commandes vitales (migrations, crontab, run_cycle).
+
+---
+
+## ⚙️ Installation Rapide
+
+1.  **Cloner et Installer** :
     ```bash
-    git clone https://github.com/votre-username/ismanews.git
-    cd ismanews
-    ```
-2.  **Installer les dépendances** :
-    ```bash
+    git clone https://github.com/75ismael/IsmaNews.git
+    cd IsmaNews
     pip install -r requirements.txt
     ```
-3.  **Configurer les variables d'environnement** :
-    Créez un fichier `.env` à la racine et ajoutez vos clés API.
-4.  **Appliquer les migrations** :
+2.  **Configuration** :
+    Créez un fichier `.env` basé sur `.env.example` avec vos API Keys (Groq, NewsAPI, Facebook).
+3.  **Lancer le Moteur** :
     ```bash
     python manage.py migrate
-    ```
-5.  **Lancer le serveur** :
-    ```bash
     python manage.py runserver
     ```
 
 ---
 
-## 📈 Perspectives d'Évolution
-- [ ] Refonte complète du design (UI/UX) pour une esthétique premium.
-- [ ] Ajout d'une application mobile (React Native) via une API REST.
-- [ ] Support multilingue pour les articles générés.
-
----
-
 ## 📄 Licence
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est sous licence MIT. Développé avec passion pour l'excellence journalistique numérique.
